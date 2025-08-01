@@ -19,7 +19,7 @@ void setup()
   Serial.begin(9600);
   chigoIR.begin();
   web.begin();
-  Serial.println("Webszerver elindítva");
+  Serial.println("Web server started");
 }
 
 void loop()

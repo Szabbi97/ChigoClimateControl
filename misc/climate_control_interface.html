@@ -1,8 +1,8 @@
 <!DOCTYPE html>
-<html lang="hu">
+<html lang="en">
 <head>
   <meta charset="UTF-8">
-  <title>Klíma vezérlés</title>
+  <title>Climate Control</title>
   <meta name="viewport" content="width=device-width, initial-scale=1">
   
 
@@ -18,7 +18,7 @@
       margin: 0;
     }
     
-    /* Felhő animációk */
+    /* Cloud animations */
     .clouds {
       position: fixed;
       top: 0;
@@ -294,16 +294,65 @@
   </style>
 </head>
 <body>
-  <!-- Animált felhők háttér -->
-  <div class="clouds" id="clouds-container">
+  <!-- Animated clouds background -->
+  <div class="clouds" id="clouds-container"></div>
+  <!-- Language selector fixed to bottom right with flags, outside container -->
+  <div id="lang-switcher">
+    <button id="lang-en" onclick="setLang('en')" title="English" aria-label="English" type="button">
+      <span style="font-size:22px;">🇬🇧</span>
+    </button>
+    <button id="lang-hu" onclick="setLang('hu')" title="Magyar" aria-label="Magyar" type="button">
+      <span style="font-size:22px;">🇭🇺</span>
+    </button>
   </div>
-  
   <div class="container">
-    <h2>Chigo klíma vezérlés</h2>
+  <style>
+    #lang-switcher {
+      position: fixed;
+      right: 18px;
+      bottom: 18px;
+      z-index: 100;
+      display: flex;
+      gap: 8px;
+      background: rgba(255,255,255,0.85);
+      border-radius: 24px;
+      box-shadow: 0 2px 8px rgba(0,0,0,0.08);
+      padding: 6px 10px;
+      align-items: center;
+    }
+    #lang-switcher button {
+      background: none;
+      border: none;
+      cursor: pointer;
+      outline: none;
+      padding: 2px 4px;
+      border-radius: 50%;
+      transition: background 0.2s;
+      font-size: 22px;
+      line-height: 1;
+    }
+    #lang-switcher button.selected, #lang-switcher button:focus {
+      background: #d0eaff;
+    }
+    #lang-switcher button:active {
+      background: #b2f7c1;
+    }
+    @media (max-width: 500px) {
+      #lang-switcher {
+        right: 8px;
+        bottom: 8px;
+        padding: 4px 6px;
+      }
+      #lang-switcher button {
+        font-size: 18px;
+      }
+    }
+  </style>
+    <h2 id="title"></h2>
     <div class="controls">
       <form onsubmit="return false;">
         <div class="slider-container" style="position:relative;">
-          <label for="temp" class="slider-label">Hőmérséklet:</label>
+          <label for="temp" class="slider-label" id="label-temp"></label>
           <div id="temp-value" class="temp-value">24 °C</div>
           <input
             type="range"
@@ -317,53 +366,87 @@
           >
         </div>
       </form>
-      
       <div class="power-buttons">
-        <button class="power-on" onclick="sendCommand('/on', 'Bekapcsolás')">Bekapcsolás</button>
-        <button class="power-off" onclick="sendCommand('/off', 'Kikapcsolás')">Kikapcsolás</button>
+        <button class="power-on" id="btn-on" onclick="sendCommand('/on', getText('on'))"></button>
+        <button class="power-off" id="btn-off" onclick="sendCommand('/off', getText('off'))"></button>
       </div>
     </div>
-    <div id="status">Állapot: nincs művelet</div>
+    <div id="status"></div>
   </div>
   <script>
+    // Language dictionary
+    const texts = {
+      en: {
+        title: "Chigo Climate Control",
+        temp: "Temperature:",
+        on: "Power On",
+        off: "Power Off",
+        status_idle: "Status: no action",
+        status_on: "Powering on (in progress...)",
+        status_off: "Powering off (in progress...)",
+        status_set: val => `Setting temperature (${val}°C)...`,
+        error: "An error occurred!"
+      },
+      hu: {
+        title: "Chigo klíma vezérlés",
+        temp: "Hőmérséklet:",
+        on: "Bekapcsolás",
+        off: "Kikapcsolás",
+        status_idle: "Állapot: nincs művelet",
+        status_on: "Bekapcsolás (folyamatban...)",
+        status_off: "Kikapcsolás (folyamatban...)",
+        status_set: val => `Hőmérséklet beállítása (${val}°C)...`,
+        error: "Hiba történt!"
+      }
+    };
+    let currentLang = 'en';
+    function setLang(lang) {
+      currentLang = lang;
+      document.getElementById('title').innerText = texts[lang].title;
+      document.getElementById('label-temp').innerText = texts[lang].temp;
+      document.getElementById('btn-on').innerText = texts[lang].on;
+      document.getElementById('btn-off').innerText = texts[lang].off;
+      document.getElementById('status').innerText = texts[lang].status_idle;
+      // Highlight selected flag
+      document.getElementById('lang-en').classList.toggle('selected', lang === 'en');
+      document.getElementById('lang-hu').classList.toggle('selected', lang === 'hu');
+    }
+    function getText(key) {
+      return typeof texts[currentLang][key] === 'function' ? texts[currentLang][key](document.getElementById('temp').value) : texts[currentLang][key];
+    }
+    // Cloud animation logic (comments in English)
     function createCloud(initialPosition = null, isInitial = false) {
       const cloudsContainer = document.getElementById('clouds-container');
       const cloud = document.createElement('div');
       cloud.className = 'cloud';
-      
-      // Véletlenszerű felhő méret és pozíció
-      const size = Math.random() * 60 + 40; // 40-100px szélesség
-      const height = size * 0.5; // magasság a szélesség fele
-      const topPosition = Math.random() * 70 + 5; // 5-75% magasság
-      const duration = Math.random() * 20 + 25; // 25-45 másodperc
-      
+      // Random cloud size and position
+      const size = Math.random() * 60 + 40; // 40-100px width
+      const height = size * 0.5; // height is half the width
+      const topPosition = Math.random() * 70 + 5; // 5-75% height
+      const duration = Math.random() * 20 + 25; // 25-45 seconds
       cloud.style.width = size + 'px';
       cloud.style.height = height + 'px';
       cloud.style.top = topPosition + '%';
-      
-      // Ha kezdő pozíció van megadva (oldal betöltéskor)
+      // If initial position is given (on page load)
       if (initialPosition !== null && isInitial) {
-        // Kezdő felhők: már a helyükön vannak, rögtön láthatók
+        // Initial clouds: already in place, immediately visible
         cloud.style.left = initialPosition + 'px';
         cloud.style.opacity = '0.7';
-        // Folytatják az úszást a jelenlegi pozíciójukból
+        // Continue floating from current position
         const remainingDistance = window.innerWidth + 150 - initialPosition;
         const remainingDuration = (remainingDistance / (window.innerWidth + 300)) * duration;
         cloud.style.animation = `floatFromPosition ${remainingDuration}s linear`;
       } else {
-        // Új felhők: balról úsznak be
+        // New clouds: float in from the left
         cloud.style.animation = `floatAcross ${duration}s linear`;
       }
-      
-      // Véletlenszerű before és after elemek (felhő alakja)
+      // Random before and after elements (cloud shape)
       const beforeSize = size * 0.6;
       const afterSize = size * 0.7;
-      
-      // Egyedi style elem minden felhőhöz
+      // Unique style element for each cloud
       const style = document.createElement('style');
       const cloudId = 'cloud-' + Date.now() + '-' + Math.random().toString(36).substr(2, 9);
       cloud.id = cloudId;
-      
       style.textContent = `
         #${cloudId}:before {
           width: ${beforeSize}px;
@@ -378,15 +461,12 @@
           right: ${size * 0.15}px;
         }
       `;
-      
       document.head.appendChild(style);
       cloudsContainer.appendChild(cloud);
-      
-      // Felhő eltávolítása az animáció végén
+      // Remove cloud at the end of animation
       const cleanupDuration = isInitial && initialPosition !== null ? 
         ((window.innerWidth + 150 - initialPosition) / (window.innerWidth + 300)) * duration * 1000 :
         duration * 1000;
-        
       setTimeout(() => {
         if (cloud.parentNode) {
           cloud.parentNode.removeChild(cloud);
@@ -396,68 +476,58 @@
         }
       }, cleanupDuration);
     }
-    
-    // Kezdő felhők létrehozása az oldal betöltésekor
+    // Create initial clouds on page load
     function createInitialClouds() {
-      const numClouds = Math.floor(Math.random() * 6) + 10; // 10-15 felhő
+      const numClouds = Math.floor(Math.random() * 6) + 10; // 10-15 clouds
       for (let i = 0; i < numClouds; i++) {
-        // Véletlenszerű kezdő pozíció a képernyő szélességén belül (0 és window.innerWidth között)
-        const initialX = Math.random() * (window.innerWidth - 100); // 100px margó a jobb oldalon
-        // Azonnal létrehozás, várakozás nélkül
-        createCloud(initialX, true); // true = kezdő felhő
+        // Random initial position within screen width (0 to window.innerWidth)
+        const initialX = Math.random() * (window.innerWidth - 100); // 100px margin on right
+        // Create immediately, no delay
+        createCloud(initialX, true); // true = initial cloud
       }
     }
-    
-    // Felhők folyamatos generálása
+    // Continuously generate clouds
     function startCloudGeneration() {
       createCloud();
-      // Következő felhő 2-5 másodperc múlva (gyors generálás)
+      // Next cloud in 2-5 seconds (fast generation)
       const nextCloudDelay = Math.random() * 3000 + 2000;
       setTimeout(startCloudGeneration, nextCloudDelay);
     }
-    
-    // Indítás oldal betöltésekor
+    // Start on page load
     document.addEventListener('DOMContentLoaded', function() {
-      // Kezdő felhők létrehozása azonnal
       createInitialClouds();
-      // Folyamatos generálás indítása azonnal
-      setTimeout(startCloudGeneration, 2000); // 2 másodperc múlva indul a folyamatos generálás
+      setTimeout(startCloudGeneration, 2000);
+      setLang('en');
     });
-
     function setStatus(msg, loading = false) {
       const status = document.getElementById('status');
       status.innerText = msg;
       status.style.color = loading ? "#888" : "#222";
     }
-
     function sendCommand(path, msg) {
-      setStatus(msg + " (folyamatban...)", true);
+      setStatus(msg + (currentLang === 'en' ? ' (in progress...)' : ' (folyamatban...)'), true);
       fetch(path)
         .then(response => response.text())
         .then(text => setStatus(text))
-        .catch(() => setStatus("Hiba történt!"));
+        .catch(() => setStatus(getText('error')));
     }
-
     function setTemperature(val) {
-      setStatus("Hőmérséklet beállítása (" + val + "°C)...", true);
+      setStatus(getText('status_set'), true);
       fetch('/set?temp=' + val)
         .then(response => response.text())
         .then(text => setStatus(text))
-        .catch(() => setStatus("Hiba történt!"));
+        .catch(() => setStatus(getText('error')));
     }
-
     function updateTempValue(val) {
-      document.getElementById('temp-value').innerText = val + " °C";
+      document.getElementById('temp-value').innerText = val + ' °C';
     }
-
-    // Automatikus hőmérséklet beállítás csúszka változásra
+    // Automatically set temperature on slider change
     let tempTimeout;
     function autoSetTemperature(val) {
       clearTimeout(tempTimeout);
       tempTimeout = setTimeout(() => setTemperature(val), 400);
     }
-
-    // Frissítés oldalbetöltéskor is
+    // Update on page load
     const slider = document.getElementById('temp');
     updateTempValue(slider.value);
   </script>
