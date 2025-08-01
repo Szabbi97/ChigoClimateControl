@@ -1,0 +1,226 @@
+<!DOCTYPE html>
+<html lang="hu">
+<head>
+  <meta charset="UTF-8">
+  <title>Klíma vezérlés</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1">  
+  <style>
+    body { font-family: sans-serif; padding: 20px; background: #f7f7f7; }
+    .container { max-width: 400px; margin: auto; background: #fff; border-radius: 10px; box-shadow: 0 2px 8px #ccc; padding: 24px; }
+    h2 { text-align: center; }
+    .controls { display: flex; flex-direction: column; gap: 12px; margin-bottom: 16px; }
+    button, select, input[type="submit"] {
+      margin: 0;
+      padding: 14px;
+      font-size: 18px;
+      border-radius: 6px;
+      border: 1px solid #bbb;
+      background: #e9e9e9;
+      transition: background 0.2s;
+      cursor: pointer;
+    }
+    button:hover, input[type="submit"]:hover { background: #d0eaff; }
+    label { font-weight: bold; margin-bottom: 4px; }
+    #status {
+      margin-top: 20px;
+      font-weight: bold;
+      padding: 10px;
+      border-radius: 6px;
+      background: #eef;
+      min-height: 32px;
+      text-align: center;
+    }
+    .power-buttons {
+      display: flex;
+      gap: 16px;
+      justify-content: center;
+      margin-bottom: 12px;
+    }
+    .power-on {
+      background: #7cffb0;
+      color: #155724;
+      border: 1px solid #7cffb0;
+      font-weight: bold;
+      box-shadow: 0 2px 6px #b2f7c1;
+      transition: background 0.2s, box-shadow 0.2s;
+    }
+    .power-on:hover {
+      background: #4be38c;
+      box-shadow: 0 4px 12px #b2f7c1;
+    }
+    .power-off {
+      background: #ff7b7b;
+      color: #721c24;
+      border: 1px solid #ff7b7b;
+      font-weight: bold;
+      box-shadow: 0 2px 6px #f7b2b2;
+      transition: background 0.2s, box-shadow 0.2s;
+    }
+    .power-off:hover {
+      background: #ff5252;
+      box-shadow: 0 4px 12px #f7b2b2;
+    }
+    .slider-container {
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      margin-bottom: 18px;
+    }
+    .slider-label {
+      font-weight: bold;
+      margin-bottom: 8px;
+    }
+    .temp-value {
+      font-size: 1.2em;
+      font-weight: bold;
+      margin-bottom: 8px;
+      color: #1976d2;
+    }
+    input[type="range"] {
+      width: 100%;
+      accent-color: #1976d2;
+      margin-bottom: 8px;
+      height: 4px;
+      border-radius: 4px;
+      background: #e0e0e0;
+      position: relative;
+      z-index: 2;
+    }
+    /* Hide default thumb for Chrome, Safari, Edge */
+    input[type="range"]::-webkit-slider-thumb {
+      -webkit-appearance: none;
+      appearance: none;
+      width: 36px;
+      height: 36px;
+      border-radius: 50%;
+      background: #fff center/70% no-repeat;
+      border: 2px solid #bbb;
+      box-shadow: 0 2px 6px #b2d7ff;
+      cursor: pointer;
+      transition: border-color 0.2s, box-shadow 0.2s;
+    }
+    input[type="range"]:focus::-webkit-slider-thumb {
+      border-color: #1976d2;
+      box-shadow: 0 4px 12px #b2d7ff;
+    }
+    /* Hide default thumb for Firefox */
+    input[type="range"]::-moz-range-thumb {
+      width: 36px;
+      height: 36px;
+      border-radius: 50%;
+      background: #fff center/70% no-repeat;
+      border: 2px solid #bbb;
+      box-shadow: 0 2px 6px #b2d7ff;
+      cursor: pointer;
+      transition: border-color 0.2s, box-shadow 0.2s;
+    }
+    input[type="range"]:focus::-moz-range-thumb {
+      border-color: #1976d2;
+      box-shadow: 0 4px 12px #b2d7ff;
+    }
+    /* Hide default thumb for IE */
+    input[type="range"]::-ms-thumb {
+      width: 36px;
+      height: 36px;
+      border-radius: 50%;
+      background: #fff center/70% no-repeat;
+      border: 2px solid #bbb;
+      box-shadow: 0 2px 6px #b2d7ff;
+      cursor: pointer;
+      transition: border-color 0.2s, box-shadow 0.2s;
+    }
+    /* Remove outline for Firefox */
+    input[type="range"]::-moz-focus-outer {
+      border: 0;
+    }
+    .slider-thumb-icon {
+      position: absolute;
+      top: 50%;
+      left: 0;
+      width: 36px;
+      height: 36px;
+      pointer-events: none;
+      transform: translateY(-50%);
+      transition: left 0.3s cubic-bezier(.4,2,.6,1), filter 0.3s;
+      z-index: 10;
+      font-size: 32px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      filter: drop-shadow(0 2px 6px rgba(0,0,0,0.10));
+      user-select: none;
+    }
+    @media (max-width: 500px) {
+      .container { padding: 10px; }
+      button, select, input[type="submit"] { font-size: 16px; padding: 10px; }
+    }
+  </style>
+</head>
+<body>
+  <div class="container">
+    <h2>Chigo klíma vezérlés</h2>
+    <div class="controls">
+      <form onsubmit="return false;">
+        <div class="slider-container" style="position:relative;">
+          <label for="temp" class="slider-label">Hőmérséklet:</label>
+          <div id="temp-value" class="temp-value">24 °C</div>
+          <input
+            type="range"
+            id="temp"
+            name="temp"
+            min="18"
+            max="30"
+            value="24"
+            oninput="updateTempValue(this.value); autoSetTemperature(this.value); updateThumbIcon(this);"
+            style="position:relative; z-index:2;"
+          >
+          <span id="slider-thumb-icon" class="slider-thumb-icon" aria-hidden="true"></span>
+        </div>
+      </form>
+      <div class="power-buttons">
+        <button class="power-on" onclick="sendCommand('/on', 'Bekapcsolás')">Bekapcsolás</button>
+        <button class="power-off" onclick="sendCommand('/off', 'Kikapcsolás')">Kikapcsolás</button>
+      </div>
+    </div>
+    <div id="status">Állapot: nincs művelet</div>
+  </div>
+  <script>
+    function setStatus(msg, loading = false) {
+      const status = document.getElementById('status');
+      status.innerText = msg;
+      status.style.color = loading ? "#888" : "#222";
+    }
+
+    function sendCommand(path, msg) {
+      setStatus(msg + " (folyamatban...)", true);
+      fetch(path)
+        .then(response => response.text())
+        .then(text => setStatus(text))
+        .catch(() => setStatus("Hiba történt!"));
+    }
+
+    function setTemperature(val) {
+      setStatus("Hőmérséklet beállítása (" + val + "°C)...", true);
+      fetch('/set?temp=' + val)
+        .then(response => response.text())
+        .then(text => setStatus(text))
+        .catch(() => setStatus("Hiba történt!"));
+    }
+
+    function updateTempValue(val) {
+      document.getElementById('temp-value').innerText = val + " °C";
+    }
+
+    // Automatikus hőmérséklet beállítás csúszka változásra
+    let tempTimeout;
+    function autoSetTemperature(val) {
+      clearTimeout(tempTimeout);
+      tempTimeout = setTimeout(() => setTemperature(val), 400);
+    }
+
+    // Frissítés oldalbetöltéskor is
+    const slider = document.getElementById('temp');
+    updateTempValue(slider.value);
+  </script>
+</body>
+</html>
