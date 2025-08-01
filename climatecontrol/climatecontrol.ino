@@ -1,14 +1,19 @@
+
 #include <ESP8266WiFi.h>
 #include <ESP8266WebServer.h>
 #include <IRremoteESP8266.h>
 #include <IRsend.h>
+#include "WiFiControl.h"
 
-const char *ssid = "WIFI_SSID";
-const char *password = "WIFI_PASSWORD";
+
+const char *ssid = "Drive The Classic";
+const char *password = "L4nci4Fulvi4.-";
+
 
 ESP8266WebServer server(80);
 const uint16_t kIrLedPin = 4; // D2 pin
 IRsend irsend(kIrLedPin);
+WiFiControl wifi(ssid, password);
 
 uint16_t rawData_on[99] = {6608, 7584, 642, 3368, 644, 3364, 646, 3368, 644, 1398, 616, 3366, 644, 3366, 646, 3366, 644, 3358, 644, 1396, 618, 1396, 616, 1398, 618, 3366, 644, 1398, 616, 1398, 618, 1396, 618, 1512, 616, 1396, 618, 3366, 644, 3366, 646, 1396, 618, 1396, 616, 3366, 646, 1396, 642, 1364, 616, 3366, 644, 1396, 618, 1394, 620, 3366, 644, 3368, 644, 1370, 644, 3366, 644, 3368, 644, 1370, 644, 3366, 644, 1370, 644, 3366, 644, 1370, 646, 3364, 646, 1368, 646, 1342, 644, 3368, 646, 1368, 646, 3366, 668, 1344, 646, 3364, 670, 1344, 644, 3366, 644, 3314, 644};
 uint16_t rawData_off[99] = {6610, 7582, 644, 3364, 646, 3366, 644, 3368, 644, 1398, 616, 3366, 646, 3366, 644, 3366, 646, 3356, 644, 1398, 616, 1398, 616, 1398, 616, 3366, 644, 1398, 616, 1398, 618, 1398, 616, 1512, 616, 1398, 616, 3366, 644, 3366, 646, 3366, 644, 1398, 616, 3368, 644, 1398, 616, 1388, 618, 3366, 644, 1398, 616, 1398, 616, 1396, 616, 3366, 644, 1398, 616, 3366, 644, 3366, 646, 1394, 620, 3366, 644, 1370, 644, 3366, 644, 1370, 644, 3366, 646, 1368, 644, 1342, 644, 3366, 644, 1370, 644, 3366, 644, 1370, 644, 3366, 644, 1370, 644, 3366, 646, 3314, 646};
@@ -487,20 +492,12 @@ void handleSet()
   }
 }
 
+
 void setup()
 {
   Serial.begin(9600);
   irsend.begin();
-
-  WiFi.begin(ssid, password);
-  Serial.print("Csatlakozás Wi-Fi-hez");
-  while (WiFi.status() != WL_CONNECTED)
-  {
-    delay(500);
-    Serial.print(".");
-  }
-  Serial.println("\nCsatlakozva: " + WiFi.localIP().toString());
-
+  wifi.connect();
   server.on("/", handleRoot);
   server.on("/on", handleOn);
   server.on("/off", handleOff);
