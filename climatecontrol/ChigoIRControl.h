@@ -11,6 +11,24 @@ public:
     void powerOn();
     void powerOff();
     bool setTemperature(int temp);
+    bool setMode(int mode); // 1: heating, 2: drying, 3: blowing, 4: cooling
+    bool setAirflow(int airflow); // 0: none, 1: 1f, 2: swing
+    bool setFanSpeed(int speed); // 0: auto, 1: low, 2: medium, 3: high
+
+    // IR raw data arrays for modes
+    static const uint16_t rawData_mode_heating[99];
+    static const uint16_t rawData_mode_drying[99];
+    static const uint16_t rawData_mode_blowing[99];
+    static const uint16_t rawData_mode_cooling[99];
+    // IR raw data arrays for airflow
+    static const uint16_t rawData_airflow_none[99];
+    static const uint16_t rawData_airflow_1f[99];
+    static const uint16_t rawData_airflow_swing[99];
+    // IR raw data arrays for fan
+    static const uint16_t rawData_fan_auto[99];
+    static const uint16_t rawData_fan_low[99];
+    static const uint16_t rawData_fan_medium[99];
+    static const uint16_t rawData_fan_high[99];
 
 private:
     IRsend irsend;

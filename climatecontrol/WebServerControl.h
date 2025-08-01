@@ -18,4 +18,7 @@ private:
     void handleOn();
     void handleOff();
     void handleSet();
+    void handleSetMode();
+    void handleSetAirflow();
+    void handleSetFan();
 };

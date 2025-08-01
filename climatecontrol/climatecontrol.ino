@@ -6,8 +6,8 @@
 #include "WebServerControl.h"
 
 
-const char *ssid = "YOUR_WIFI_SSID";
-const char *password = "YOUR_WIFI_PASSWORD";
+const char *ssid = "Drive The Classic";
+const char *password = "L4nci4Fulvi4.-";
 
 ESP8266WebServer server(80);
 WiFiControl wifi(ssid, password);
@@ -20,6 +20,8 @@ void setup()
   chigoIR.begin();
   web.begin();
   Serial.println("Web server started");
+  Serial.print("WiFi IP: ");
+  Serial.println(WiFi.localIP());
 }
 
 void loop()
