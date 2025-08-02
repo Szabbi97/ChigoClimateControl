@@ -144,7 +144,7 @@
       box-shadow: 0 4px 16px rgba(0, 0, 0, 0.1);
       padding: 24px;
       position: relative;
-      z-index: 1;
+      z-index: 11;
       backdrop-filter: blur(5px);
       width: calc(100% - 40px);
       min-height: auto;
@@ -245,6 +245,55 @@
       flex: 1;
       min-width: 120px;
       text-align: center;
+    }
+
+    /* Thunder flash effect - only background flashes, grayish color, more natural, behind container */
+    #thunder-flash {
+      position: fixed;
+      top: 0;
+      left: 0;
+      width: 100vw;
+      height: 100vh;
+      background: linear-gradient(120deg, rgba(160, 160, 170, 0.55) 0%, rgba(200, 200, 210, 0.7) 100%) !important;
+      opacity: 0;
+      pointer-events: none;
+      z-index: 0;
+      transition: opacity 0.2s;
+      mix-blend-mode: lighten;
+    }
+
+    .thunder-active {
+      animation: thunder-flash-bg 1.2s cubic-bezier(.7, 0, .3, 1);
+    }
+
+    @keyframes thunder-flash-bg {
+      0% {
+        opacity: 0;
+      }
+
+      10% {
+        opacity: 0.45;
+      }
+
+      25% {
+        opacity: 0.18;
+      }
+
+      40% {
+        opacity: 0.32;
+      }
+
+      60% {
+        opacity: 0.12;
+      }
+
+      80% {
+        opacity: 0.22;
+      }
+
+      100% {
+        opacity: 0;
+      }
     }
 
     .power-on {
@@ -704,12 +753,12 @@
       transform: translateX(-18px);
     }
 
-    .switch input:checked + .slider .icon.sun {
+    .switch input:checked+.slider .icon.sun {
       opacity: 0;
       transform: translateX(18px) scale(0.8);
     }
 
-    .switch input:checked + .slider .icon.moon {
+    .switch input:checked+.slider .icon.moon {
       opacity: 1;
       transform: translateX(0) scale(1.1);
     }
@@ -727,7 +776,7 @@
       transition: left 0.4s cubic-bezier(.68, -0.55, .27, 1.55), background 0.3s;
     }
 
-    .switch input:checked + .slider:before {
+    .switch input:checked+.slider:before {
       left: 28px;
       background: #222;
     }
@@ -755,14 +804,205 @@
         top: 2px;
       }
 
-      .switch input:checked + .slider:before {
+      .switch input:checked+.slider:before {
         left: 20px;
+      }
+    }
+
+    /* Weather effects container */
+    #weather-effects {
+      position: fixed;
+      top: 0;
+      left: 0;
+      width: 100vw;
+      height: 100vh;
+      pointer-events: none;
+      z-index: 2;
+      overflow: hidden;
+    }
+
+    /* Rain drop style */
+    .raindrop {
+      position: absolute;
+      width: 2px;
+      height: 18px;
+      background: linear-gradient(to bottom, #90caf9 60%, transparent 100%);
+      opacity: 0.7;
+      border-radius: 1px;
+      animation: raindrop-fall 1.2s linear infinite;
+    }
+
+    @keyframes raindrop-fall {
+      0% {
+        top: -20px;
+        opacity: 0.7;
+      }
+
+      80% {
+        opacity: 0.7;
+      }
+
+      100% {
+        top: 100vh;
+        opacity: 0;
+      }
+    }
+
+    /* Snowflake style */
+    .snowflake {
+      position: absolute;
+      top: -32px;
+      color: #90caf9;
+      opacity: 0.85;
+      animation: snowflake-fall 3.5s linear infinite;
+      pointer-events: none;
+      user-select: none;
+      will-change: transform;
+    }
+
+    @keyframes snowflake-fall {
+      0% {
+        top: -32px;
+        opacity: 0.85;
+        transform: translateX(0);
+      }
+
+      80% {
+        opacity: 0.85;
+      }
+
+      100% {
+        top: 100vh;
+        opacity: 0;
+        transform: translateX(20px);
+      }
+    }
+
+    /* Thunderbolt style */
+    .thunderbolt {
+      position: absolute;
+      top: 0;
+      width: 32px;
+      height: 64px;
+      opacity: 0.85;
+      animation: thunderbolt-flash 1.2s linear infinite;
+      pointer-events: none;
+      z-index: 3;
+    }
+
+    @keyframes thunderbolt-flash {
+
+      0%,
+      100% {
+        opacity: 0;
+      }
+
+      10% {
+        opacity: 0.85;
+      }
+
+      20% {
+        opacity: 0.2;
+      }
+
+      30% {
+        opacity: 0.85;
+      }
+
+      40% {
+        opacity: 0.2;
+      }
+
+      50% {
+        opacity: 0.85;
+      }
+
+      60% {
+        opacity: 0.2;
+      }
+
+      70% {
+        opacity: 0.85;
+      }
+
+      80% {
+        opacity: 0.2;
+      }
+
+      90% {
+        opacity: 0.85;
+      }
+    }
+
+    /* Thunder flash effect */
+    #thunder-flash {
+      position: fixed;
+      top: 0;
+      left: 0;
+      width: 100vw;
+      height: 100vh;
+      background: #fff;
+      opacity: 0;
+      pointer-events: none;
+      z-index: 10;
+      transition: opacity 0.2s;
+    }
+
+    .thunder-active {
+      animation: thunder-flash-bg 0.7s linear;
+    }
+
+    @keyframes thunder-flash-bg {
+      0% {
+        opacity: 0;
+      }
+
+      10% {
+        opacity: 0.7;
+      }
+
+      20% {
+        opacity: 0.2;
+      }
+
+      30% {
+        opacity: 0.7;
+      }
+
+      40% {
+        opacity: 0.2;
+      }
+
+      50% {
+        opacity: 0.7;
+      }
+
+      60% {
+        opacity: 0.2;
+      }
+
+      70% {
+        opacity: 0.7;
+      }
+
+      80% {
+        opacity: 0.2;
+      }
+
+      90% {
+        opacity: 0.7;
+      }
+
+      100% {
+        opacity: 0;
       }
     }
   </style>
 </head>
 
 <body>
+  <!-- Thunder flash effect (must be behind container) -->
+  <div id="thunder-flash"></div>
   <!-- Animated clouds background -->
   <div class="clouds" id="clouds-container"></div>
   <!-- Animated sun/moon background -->
@@ -907,6 +1147,10 @@
       </span>
     </label>
   </div>
+  <!-- Weather effects container -->
+  <div id="weather-effects"></div>
+  <!-- Weather info box -->
+  <div id="weather-info"></div>
   <script>
     // Gombcsoportos vezérlők JS
     function selectMode(btn) {
@@ -1248,6 +1492,110 @@
         darkPref = window.matchMedia && window.matchMedia('(prefers-color-scheme: dark)').matches ? '1' : '0';
       }
       setDarkMode(darkPref === '1');
+    });
+    // --- Weather Effects & API ---
+    // Show rain animation
+    function showRainEffect(count = 40) {
+      const container = document.getElementById('weather-effects');
+      container.innerHTML = '';
+      for (let i = 0; i < count; i++) {
+        const drop = document.createElement('div');
+        drop.className = 'raindrop';
+        drop.style.left = Math.random() * 100 + 'vw';
+        drop.style.animationDelay = (Math.random() * 1.2) + 's';
+        container.appendChild(drop);
+      }
+    }
+    // Show snow animation
+    function showSnowEffect(count = 30) {
+      const container = document.getElementById('weather-effects');
+      container.innerHTML = '';
+      for (let i = 0; i < count; i++) {
+        const snow = document.createElement('div');
+        snow.className = 'snowflake';
+        snow.style.left = Math.random() * 100 + 'vw';
+        snow.style.animationDelay = (Math.random() * 2) + 's';
+        snow.style.fontSize = (Math.random() * 12 + 12) + 'px';
+        snow.innerText = '❄️';
+        container.appendChild(snow);
+      }
+    }
+    // Thunder flash animation: natural, repeats at random intervals, only background
+    let thunderFlashInterval = null;
+    function showThunderEffect() {
+      const flashDiv = document.getElementById('thunder-flash');
+      clearThunderEffect();
+      function flash() {
+        flashDiv.classList.remove('thunder-active');
+        void flashDiv.offsetWidth;
+        flashDiv.classList.add('thunder-active');
+      }
+      function scheduleFlash() {
+        flash();
+        // Next flash in 1.5-4s (random)
+        thunderFlashInterval = setTimeout(scheduleFlash, 1500 + Math.random() * 2500);
+      }
+      scheduleFlash();
+    }
+    function clearThunderEffect() {
+      if (thunderFlashInterval) {
+        clearTimeout(thunderFlashInterval);
+        thunderFlashInterval = null;
+      }
+      const flashDiv = document.getElementById('thunder-flash');
+      flashDiv.classList.remove('thunder-active');
+    }
+    // Hide all weather effects
+    function clearWeatherEffects() {
+      document.getElementById('weather-effects').innerHTML = '';
+      clearThunderEffect();
+    }
+    // Show weather info
+    function showWeatherInfo(text) {
+      const info = document.getElementById('weather-info');
+      info.innerText = text;
+      info.classList.add('visible');
+    }
+    function hideWeatherInfo() {
+      document.getElementById('weather-info').classList.remove('visible');
+    }
+    // Get geolocation and weather
+    function fetchWeatherForLocation() {
+      if (!navigator.geolocation) return;
+      navigator.geolocation.getCurrentPosition(function (pos) {
+        const lat = pos.coords.latitude;
+        const lon = pos.coords.longitude;
+        // OpenWeatherMap API (replace YOUR_API_KEY with your own key)
+        const apiKey = 'YOUR_API_KEY';
+        const url = `https://api.openweathermap.org/data/2.5/weather?lat=${lat}&lon=${lon}&units=metric&lang=hu&appid=${apiKey}`;
+        fetch(url)
+          .then(res => res.json())
+          .then(data => {
+            if (!data.weather || !data.weather[0]) return;
+            const main = data.weather[0].main.toLowerCase();
+            const desc = data.weather[0].description;
+            const temp = Math.round(data.main.temp);
+            showWeatherInfo(`${desc}, ${temp}°C`);
+            // Show effect by weather
+            clearWeatherEffects();
+            if (main.includes('rain')) {
+              showRainEffect();
+            } else if (main.includes('snow')) {
+              showSnowEffect();
+            } else if (main.includes('thunder') || main.includes('storm')) {
+              showThunderEffect();
+            } else {
+              clearWeatherEffects();
+            }
+          })
+          .catch(() => hideWeatherInfo());
+      }, function () {
+        hideWeatherInfo();
+      });
+    }
+    // Call on page load
+    document.addEventListener('DOMContentLoaded', function () {
+      fetchWeatherForLocation();
     });
   </script>
 </body>
