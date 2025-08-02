@@ -1,6 +1,5 @@
-// Climate control interface JavaScript
-// This script handles the UI interactions, climate control commands, and weather effects
-// Gombcsoportos vezérlők JS
+// --- Climate Control UI Logic ---
+// Button group selection logic (SRP: UI state)
 function selectMode(btn) {
     document.querySelectorAll('.mode-btn').forEach(b => b.classList.remove('selected'));
     btn.classList.add('selected');
@@ -22,28 +21,30 @@ function selectFan(btn) {
     setFan(val);
     localStorage.setItem('climate_fan', val);
 }
-// Alapértelmezett kiválasztás
+
+// --- State Initialization (SRP: UI state restore) ---
 document.addEventListener('DOMContentLoaded', function () {
-    // Visszatöltés localStorage-ból
+    // Restore from localStorage
     const savedMode = localStorage.getItem('climate_mode') || '1';
     const savedAirflow = localStorage.getItem('climate_airflow') || '0';
     const savedFan = localStorage.getItem('climate_fan') || '0';
     const savedTemp = localStorage.getItem('climate_temp') || '24';
-    // Mód gomb kijelölés
+    // Select mode button
     const modeBtn = document.querySelector('.mode-btn[data-value="' + savedMode + '"]');
     if (modeBtn) modeBtn.classList.add('selected');
-    // Légáram gomb kijelölés
+    // Select airflow button
     const airflowBtn = document.querySelector('.airflow-btn[data-value="' + savedAirflow + '"]');
     if (airflowBtn) airflowBtn.classList.add('selected');
-    // Ventilátor gomb kijelölés
+    // Select fan button
     const fanBtn = document.querySelector('.fan-btn[data-value="' + savedFan + '"]');
     if (fanBtn) fanBtn.classList.add('selected');
-    // Hőmérséklet slider visszaállítás
+    // Restore temperature slider
     const slider = document.getElementById('temp');
     slider.value = savedTemp;
     updateTempValue(savedTemp);
 });
-// Language dictionary
+
+// --- Language Management (SRP: Localization) ---
 const texts = {
     en: {
         title: "Chigo Climate Control",
@@ -80,7 +81,27 @@ const texts = {
         error: "Hiba történt!"
     }
 };
-// Set initial language based on localStorage or default to English
+let currentLang = 'en';
+function setLang(lang) {
+    currentLang = lang;
+    localStorage.setItem('climate_lang', lang);
+    document.getElementById('title').innerText = texts[lang].title;
+    document.getElementById('label-temp').innerText = texts[lang].temp;
+    document.getElementById('label-mode').innerText = texts[lang].mode;
+    document.getElementById('label-airflow').innerText = texts[lang].airflow;
+    document.getElementById('label-fan').innerText = texts[lang].fan;
+    document.getElementById('btn-on').innerText = texts[lang].on;
+    document.getElementById('btn-off').innerText = texts[lang].off;
+    document.getElementById('status').innerText = texts[lang].status_idle;
+    // Highlight selected flag
+    document.getElementById('lang-en').classList.toggle('selected', lang === 'en');
+    document.getElementById('lang-hu').classList.toggle('selected', lang === 'hu');
+}
+function getText(key) {
+    return typeof texts[currentLang][key] === 'function' ? texts[currentLang][key](document.getElementById('temp').value) : texts[currentLang][key];
+}
+
+// --- Climate Control Commands (SRP: Backend communication) ---
 function setMode(val) {
     setStatus(getText('status_mode'), true);
     fetch('/setmode?mode=' + val)
@@ -111,118 +132,28 @@ function setFan(val) {
         .then(text => setStatus(text))
         .catch(() => setStatus(getText('error')));
 }
-// Language management
-// Store current language in localStorage
-let currentLang = 'en';
-function setLang(lang) {
-    currentLang = lang;
-    localStorage.setItem('climate_lang', lang);
-    document.getElementById('title').innerText = texts[lang].title;
-    document.getElementById('label-temp').innerText = texts[lang].temp;
-    document.getElementById('label-mode').innerText = texts[lang].mode;
-    document.getElementById('label-airflow').innerText = texts[lang].airflow;
-    document.getElementById('label-fan').innerText = texts[lang].fan;
-    document.getElementById('btn-on').innerText = texts[lang].on;
-    document.getElementById('btn-off').innerText = texts[lang].off;
-    document.getElementById('status').innerText = texts[lang].status_idle;
-    // Highlight selected flag
-    document.getElementById('lang-en').classList.toggle('selected', lang === 'en');
-    document.getElementById('lang-hu').classList.toggle('selected', lang === 'hu');
+function sendCommand(path, msg) {
+    setStatus(msg + (currentLang === 'en' ? ' (in progress...)' : ' (folyamatban...)'), true);
+    fetch(path)
+        .then(response => response.text())
+        .then(text => setStatus(text))
+        .catch(() => setStatus(getText('error')));
 }
-function getText(key) {
-    return typeof texts[currentLang][key] === 'function' ? texts[currentLang][key](document.getElementById('temp').value) : texts[currentLang][key];
+function setTemperature(val) {
+    setStatus(getText('status_set'), true);
+    fetch('/set?temp=' + val)
+        .then(response => response.text())
+        .then(text => setStatus(text))
+        .catch(() => setStatus(getText('error')));
+    localStorage.setItem('climate_temp', val);
 }
-// Cloud animation logic (comments in English)
-function createCloud(initialPosition = null, isInitial = false) {
-    const cloudsContainer = document.getElementById('clouds-container');
-    const cloud = document.createElement('div');
-    cloud.className = 'cloud';
-    // Random cloud size and position
-    const size = Math.random() * 60 + 40; // 40-100px width
-    const height = size * 0.5; // height is half the width
-    const topPosition = Math.random() * 70 + 5; // 5-75% height
-    const duration = Math.random() * 20 + 25; // 25-45 seconds
-    cloud.style.width = size + 'px';
-    cloud.style.height = height + 'px';
-    cloud.style.top = topPosition + '%';
-    // If initial position is given (on page load)
-    if (initialPosition !== null && isInitial) {
-        // Initial clouds: already in place, immediately visible
-        cloud.style.left = initialPosition + 'px';
-        cloud.style.opacity = '0.7';
-        // Continue floating from current position
-        const remainingDistance = window.innerWidth + 150 - initialPosition;
-        const remainingDuration = (remainingDistance / (window.innerWidth + 300)) * duration;
-        cloud.style.animation = `floatFromPosition ${remainingDuration}s linear`;
-    } else {
-        // New clouds: float in from the left
-        cloud.style.animation = `floatAcross ${duration}s linear`;
-    }
-    // Random before and after elements (cloud shape)
-    const beforeSize = size * 0.6;
-    const afterSize = size * 0.7;
-    // Unique style element for each cloud
-    const style = document.createElement('style');
-    const cloudId = 'cloud-' + Date.now() + '-' + Math.random().toString(36).substr(2, 9);
-    cloud.id = cloudId;
-    style.textContent = `
-        #${cloudId}:before {
-          width: ${beforeSize}px;
-          height: ${beforeSize}px;
-          top: ${-beforeSize / 2}px;
-          left: ${size * 0.15}px;
-        }
-        #${cloudId}:after {
-          width: ${afterSize}px;
-          height: ${height}px;
-          top: ${-height * 0.3}px;
-          right: ${size * 0.15}px;
-        }
-      `;
-    document.head.appendChild(style);
-    cloudsContainer.appendChild(cloud);
-    // Remove cloud at the end of animation
-    const cleanupDuration = isInitial && initialPosition !== null ?
-        ((window.innerWidth + 150 - initialPosition) / (window.innerWidth + 300)) * duration * 1000 :
-        duration * 1000;
-    setTimeout(() => {
-        if (cloud.parentNode) {
-            cloud.parentNode.removeChild(cloud);
-        }
-        if (style.parentNode) {
-            style.parentNode.removeChild(style);
-        }
-    }, cleanupDuration);
-}
-// Create initial clouds on page load
-function createInitialClouds() {
-    const numClouds = Math.floor(Math.random() * 6) + 10; // 10-15 clouds
-    for (let i = 0; i < numClouds; i++) {
-        // Random initial position within screen width (0 to window.innerWidth)
-        const initialX = Math.random() * (window.innerWidth - 100); // 100px margin on right
-        // Create immediately, no delay
-        createCloud(initialX, true); // true = initial cloud
-    }
-}
-// Continuously generate clouds
-function startCloudGeneration() {
-    createCloud();
-    // Next cloud in 2-5 seconds (fast generation)
-    const nextCloudDelay = Math.random() * 3000 + 2000;
-    setTimeout(startCloudGeneration, nextCloudDelay);
-}
-// Start on page load
-document.addEventListener('DOMContentLoaded', function () {
-    createInitialClouds();
-    setTimeout(startCloudGeneration, 2000);
-    const savedLang = localStorage.getItem('climate_lang');
-    setLang(savedLang === 'hu' ? 'hu' : 'en');
-});
+
+// --- Status Display Logic (SRP: UI feedback) ---
 function setStatus(msg, loading = false) {
     const status = document.getElementById('status');
     status.innerHTML = '';
     if (loading) {
-        // Animáció kiválasztása szöveg alapján
+        // Select animation by message
         let iconSpan = document.createElement('span');
         if (msg.includes('Powering on') || msg.includes('Bekapcsolás')) {
             iconSpan.className = 'status-fan';
@@ -241,41 +172,28 @@ function setStatus(msg, loading = false) {
         status.style.color = "#222";
     }
 }
-function sendCommand(path, msg) {
-    setStatus(msg + (currentLang === 'en' ? ' (in progress...)' : ' (folyamatban...)'), true);
-    fetch(path)
-        .then(response => response.text())
-        .then(text => setStatus(text))
-        .catch(() => setStatus(getText('error')));
-}
-function setTemperature(val) {
-    setStatus(getText('status_set'), true);
-    fetch('/set?temp=' + val)
-        .then(response => response.text())
-        .then(text => setStatus(text))
-        .catch(() => setStatus(getText('error')));
-    localStorage.setItem('climate_temp', val);
-}
+
+// --- Temperature Slider Logic (SRP: UI temperature) ---
 function updateTempValue(val) {
     document.getElementById('temp-value').innerText = val + ' °C';
-    // Színskála: 18°C = kék, 24°C = sárga, 30°C = piros
+    // Color scale: 18°C = blue, 24°C = yellow, 30°C = red
     const slider = document.getElementById('temp');
     val = parseInt(val);
     let r, g, b;
-    // Egyszerűsített: kék (20°C) -> zöld (24°C) -> piros (30°C)
+    // Simplified: blue (20°C) -> green (24°C) -> red (30°C)
     if (val <= 20) {
         r = 25;
         g = 118;
         b = 210;
-        // kék
+        // blue
     } else if (val < 24) {
-        // kék -> zöld
+        // blue -> green
         const ratio = (val - 20) / 4;
         r = Math.round(25 + (76 - 25) * ratio);
         g = Math.round(118 + (175 - 118) * ratio);
         b = Math.round(210 + (80 - 210) * ratio);
     } else if (val <= 30) {
-        // zöld -> piros
+        // green -> red
         const ratio = (val - 24) / 6;
         r = Math.round(76 + (255 - 76) * ratio);
         g = Math.round(175 + (82 - 175) * ratio);
@@ -284,14 +202,14 @@ function updateTempValue(val) {
         r = 255;
         g = 82;
         b = 82;
-        // piros
+        // red
     }
-    // RGB -> HEX átalakítás
+    // RGB -> HEX conversion
     function rgbToHex(r, g, b) {
         return '#' + [r, g, b].map(x => x.toString(16).padStart(2, '0')).join('');
     }
     const hexColor = rgbToHex(r, g, b);
-    // Only change the accentColor (thumb/filled part), not the track background
+    // Only change accentColor (thumb/filled part), not track background
     // Remove previous dynamic style if exists
     let prevStyle = document.getElementById('slider-accent-style');
     if (prevStyle) prevStyle.remove();
@@ -301,16 +219,15 @@ function updateTempValue(val) {
     style.textContent = `#temp { accent-color: ${hexColor}; }`;
     document.head.appendChild(style);
 }
-// Automatically set temperature on slider change
 let tempTimeout;
 function autoSetTemperature(val) {
     clearTimeout(tempTimeout);
     tempTimeout = setTimeout(() => setTemperature(val), 400);
 }
-// Update on page load
 const slider = document.getElementById('temp');
 updateTempValue(slider.value);
-// Sötét mód logika
+
+// --- Dark Mode Logic (SRP: Theme management) ---
 function applyDarkMode(dark) {
     document.body.classList.toggle('darkmode', dark);
     document.querySelector('.container').classList.toggle('darkmode', dark);
@@ -320,7 +237,7 @@ function applyDarkMode(dark) {
         el.classList.toggle('darkmode', dark);
     });
     document.getElementById('darkmode-toggle').checked = dark;
-    // Sun/moon animáció
+    // Sun/moon animation
     const sun = document.getElementById('sun-bg');
     const moon = document.getElementById('moon-bg');
     if (dark) {
@@ -342,7 +259,6 @@ function setDarkMode(dark) {
 document.getElementById('darkmode-toggle').addEventListener('change', function () {
     setDarkMode(this.checked);
 });
-// Automatikus sötét mód rendszer alapján
 document.addEventListener('DOMContentLoaded', function () {
     let darkPref = localStorage.getItem('climate_darkmode');
     if (darkPref === null) {
@@ -350,8 +266,8 @@ document.addEventListener('DOMContentLoaded', function () {
     }
     setDarkMode(darkPref === '1');
 });
-// --- Weather Effects & API ---
-// Show rain animation
+
+// --- Weather Effects & API (SRP: Weather visualization) ---
 function showRainEffect(count = 40) {
     const container = document.getElementById('weather-effects');
     container.innerHTML = '';
@@ -363,7 +279,6 @@ function showRainEffect(count = 40) {
         container.appendChild(drop);
     }
 }
-// Show snow animation
 function showSnowEffect(count = 30) {
     const container = document.getElementById('weather-effects');
     container.innerHTML = '';
@@ -377,7 +292,6 @@ function showSnowEffect(count = 30) {
         container.appendChild(snow);
     }
 }
-// Thunder flash animation: natural, repeats at random intervals, only background
 let thunderFlashInterval = null;
 function showThunderEffect() {
     const flashDiv = document.getElementById('thunder-flash');
@@ -389,7 +303,6 @@ function showThunderEffect() {
     }
     function scheduleFlash() {
         flash();
-        // Next flash in 1.5-4s (random)
         thunderFlashInterval = setTimeout(scheduleFlash, 1500 + Math.random() * 2500);
     }
     scheduleFlash();
@@ -402,12 +315,10 @@ function clearThunderEffect() {
     const flashDiv = document.getElementById('thunder-flash');
     flashDiv.classList.remove('thunder-active');
 }
-// Hide all weather effects
 function clearWeatherEffects() {
     document.getElementById('weather-effects').innerHTML = '';
     clearThunderEffect();
 }
-// Show weather info
 function showWeatherInfo(text) {
     const info = document.getElementById('weather-info');
     info.innerText = text;
@@ -416,7 +327,6 @@ function showWeatherInfo(text) {
 function hideWeatherInfo() {
     document.getElementById('weather-info').classList.remove('visible');
 }
-// Get geolocation and weather
 function fetchWeatherForLocation() {
     if (!navigator.geolocation) return;
     navigator.geolocation.getCurrentPosition(function (pos) {
@@ -433,7 +343,6 @@ function fetchWeatherForLocation() {
                 const desc = data.weather[0].description;
                 const temp = Math.round(data.main.temp);
                 showWeatherInfo(`${desc}, ${temp}°C`);
-                // Show effect by weather
                 clearWeatherEffects();
                 if (main.includes('rain')) {
                     showRainEffect();
@@ -450,7 +359,81 @@ function fetchWeatherForLocation() {
         hideWeatherInfo();
     });
 }
-// Call on page load
 document.addEventListener('DOMContentLoaded', function () {
     fetchWeatherForLocation();
+});
+
+// --- Cloud Animation Logic (SRP: Weather visualization) ---
+function createCloud(initialPosition = null, isInitial = false) {
+    const cloudsContainer = document.getElementById('clouds-container');
+    const cloud = document.createElement('div');
+    cloud.className = 'cloud';
+    // Random cloud size and position
+    const size = Math.random() * 60 + 40; // 40-100px width
+    const height = size * 0.5; // height is half the width
+    const topPosition = Math.random() * 70 + 5; // 5-75% height
+    const duration = Math.random() * 20 + 25; // 25-45 seconds
+    cloud.style.width = size + 'px';
+    cloud.style.height = height + 'px';
+    cloud.style.top = topPosition + '%';
+    // If initial position is given (on page load)
+    if (initialPosition !== null && isInitial) {
+        cloud.style.left = initialPosition + 'px';
+        cloud.style.opacity = '0.7';
+        const remainingDistance = window.innerWidth + 150 - initialPosition;
+        const remainingDuration = (remainingDistance / (window.innerWidth + 300)) * duration;
+        cloud.style.animation = `floatFromPosition ${remainingDuration}s linear`;
+    } else {
+        cloud.style.animation = `floatAcross ${duration}s linear`;
+    }
+    const beforeSize = size * 0.6;
+    const afterSize = size * 0.7;
+    const style = document.createElement('style');
+    const cloudId = 'cloud-' + Date.now() + '-' + Math.random().toString(36).substr(2, 9);
+    cloud.id = cloudId;
+    style.textContent = `
+        #${cloudId}:before {
+          width: ${beforeSize}px;
+          height: ${beforeSize}px;
+          top: ${-beforeSize / 2}px;
+          left: ${size * 0.15}px;
+        }
+        #${cloudId}:after {
+          width: ${afterSize}px;
+          height: ${height}px;
+          top: ${-height * 0.3}px;
+          right: ${size * 0.15}px;
+        }
+      `;
+    document.head.appendChild(style);
+    cloudsContainer.appendChild(cloud);
+    const cleanupDuration = isInitial && initialPosition !== null ?
+        ((window.innerWidth + 150 - initialPosition) / (window.innerWidth + 300)) * duration * 1000 :
+        duration * 1000;
+    setTimeout(() => {
+        if (cloud.parentNode) {
+            cloud.parentNode.removeChild(cloud);
+        }
+        if (style.parentNode) {
+            style.parentNode.removeChild(style);
+        }
+    }, cleanupDuration);
+}
+function createInitialClouds() {
+    const numClouds = Math.floor(Math.random() * 6) + 10; // 10-15 clouds
+    for (let i = 0; i < numClouds; i++) {
+        const initialX = Math.random() * (window.innerWidth - 100);
+        createCloud(initialX, true);
+    }
+}
+function startCloudGeneration() {
+    createCloud();
+    const nextCloudDelay = Math.random() * 3000 + 2000;
+    setTimeout(startCloudGeneration, nextCloudDelay);
+}
+document.addEventListener('DOMContentLoaded', function () {
+    createInitialClouds();
+    setTimeout(startCloudGeneration, 2000);
+    const savedLang = localStorage.getItem('climate_lang');
+    setLang(savedLang === 'hu' ? 'hu' : 'en');
 });
