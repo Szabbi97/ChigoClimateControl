@@ -19,6 +19,57 @@
       margin: 0;
     }
 
+    #weather-bg {
+      position: fixed;
+      top: 0;
+      left: 0;
+      width: 100vw;
+      height: 100vh;
+      pointer-events: none;
+      z-index: 0;
+      overflow: hidden;
+    }
+
+    #sun-bg,
+    #moon-bg {
+      position: absolute;
+      left: 80%;
+      top: 12%;
+      transform: translate(-50%, 0);
+      width: 120px;
+      height: 120px;
+      z-index: 1;
+      transition: opacity 0.7s, filter 0.7s;
+      filter: drop-shadow(0 0 32px #ffd60088);
+      opacity: 1;
+      animation: sunfloat 8s ease-in-out infinite alternate;
+    }
+
+    #moon-bg {
+      filter: drop-shadow(0 0 32px #90caf988);
+      animation: moonfloat 8s ease-in-out infinite alternate;
+    }
+
+    @keyframes sunfloat {
+      0% {
+        transform: translate(-50%, 0) scale(1);
+      }
+
+      100% {
+        transform: translate(-50%, 16px) scale(1.04);
+      }
+    }
+
+    @keyframes moonfloat {
+      0% {
+        transform: translate(-50%, 0) scale(1);
+      }
+
+      100% {
+        transform: translate(-50%, 24px) scale(1.08);
+      }
+    }
+
     /* Cloud animations */
     .clouds {
       position: fixed;
@@ -714,6 +765,31 @@
 <body>
   <!-- Animated clouds background -->
   <div class="clouds" id="clouds-container"></div>
+  <!-- Animated sun/moon background -->
+  <div id="weather-bg">
+    <div id="sun-bg">
+      <!-- Sun SVG -->
+      <svg width="120" height="120" viewBox="0 0 120 120" fill="none" xmlns="http://www.w3.org/2000/svg">
+        <circle cx="60" cy="60" r="38" fill="#FFD600" />
+        <g stroke="#FFD600" stroke-width="6">
+          <line x1="60" y1="10" x2="60" y2="32" />
+          <line x1="60" y1="88" x2="60" y2="110" />
+          <line x1="10" y1="60" x2="32" y2="60" />
+          <line x1="88" y1="60" x2="110" y2="60" />
+          <line x1="28" y1="28" x2="42" y2="42" />
+          <line x1="92" y1="92" x2="78" y2="78" />
+          <line x1="28" y1="92" x2="42" y2="78" />
+          <line x1="92" y1="28" x2="78" y2="42" />
+        </g>
+      </svg>
+    </div>
+    <div id="moon-bg" style="display:none;">
+      <!-- Moon SVG -->
+      <svg width="120" height="120" viewBox="0 0 120 120" fill="none" xmlns="http://www.w3.org/2000/svg">
+        <path d="M90 60c0 16.57-13.43 30-30 30a30 30 0 010-60c1.7 0 3.37.15 5 .45A35 35 0 0090 60z" fill="#90caf9" />
+      </svg>
+    </div>
+  </div>
   <!-- Language selector fixed to bottom right with flags, outside container -->
   <div id="lang-switcher">
     <button id="lang-en" onclick="setLang('en')" title="English" aria-label="English" type="button">
@@ -1081,6 +1157,48 @@
     }
     function updateTempValue(val) {
       document.getElementById('temp-value').innerText = val + ' °C';
+      // Színskála: 18°C = kék, 24°C = sárga, 30°C = piros
+      const slider = document.getElementById('temp');
+      val = parseInt(val);
+      let r, g, b;
+      // Egyszerűsített: kék (20°C) -> zöld (24°C) -> piros (30°C)
+      if (val <= 20) {
+        r = 25;
+        g = 118;
+        b = 210;
+        // kék
+      } else if (val < 24) {
+        // kék -> zöld
+        const ratio = (val - 20) / 4;
+        r = Math.round(25 + (76 - 25) * ratio);
+        g = Math.round(118 + (175 - 118) * ratio);
+        b = Math.round(210 + (80 - 210) * ratio);
+      } else if (val <= 30) {
+        // zöld -> piros
+        const ratio = (val - 24) / 6;
+        r = Math.round(76 + (255 - 76) * ratio);
+        g = Math.round(175 + (82 - 175) * ratio);
+        b = Math.round(80 + (82 - 80) * ratio);
+      } else {
+        r = 255;
+        g = 82;
+        b = 82;
+        // piros
+      }
+      // RGB -> HEX átalakítás
+      function rgbToHex(r, g, b) {
+        return '#' + [r, g, b].map(x => x.toString(16).padStart(2, '0')).join('');
+      }
+      const hexColor = rgbToHex(r, g, b);
+      // Only change the accentColor (thumb/filled part), not the track background
+      // Remove previous dynamic style if exists
+      let prevStyle = document.getElementById('slider-accent-style');
+      if (prevStyle) prevStyle.remove();
+      // Create new style element for accent-color
+      const style = document.createElement('style');
+      style.id = 'slider-accent-style';
+      style.textContent = `#temp { accent-color: ${hexColor}; }`;
+      document.head.appendChild(style);
     }
     // Automatically set temperature on slider change
     let tempTimeout;
@@ -1097,12 +1215,24 @@
       document.querySelector('.container').classList.toggle('darkmode', dark);
       document.getElementById('status').classList.toggle('darkmode', dark);
       document.getElementById('lang-switcher').classList.toggle('darkmode', dark);
-      // Gombok, label-ek, slider, stb.
       document.querySelectorAll('button, select, input[type="submit"], .slider-label, .temp-value, label, .mode-btn, .airflow-btn, .fan-btn, .power-on, .power-off').forEach(el => {
         el.classList.toggle('darkmode', dark);
       });
-      // Kapcsoló állapot
       document.getElementById('darkmode-toggle').checked = dark;
+      // Sun/moon animáció
+      const sun = document.getElementById('sun-bg');
+      const moon = document.getElementById('moon-bg');
+      if (dark) {
+        sun.style.opacity = 0;
+        sun.style.display = 'none';
+        moon.style.opacity = 1;
+        moon.style.display = 'block';
+      } else {
+        sun.style.opacity = 1;
+        sun.style.display = 'block';
+        moon.style.opacity = 0;
+        moon.style.display = 'none';
+      }
     }
     function setDarkMode(dark) {
       applyDarkMode(dark);
