@@ -20,8 +20,6 @@ void setup()
   chigoIR.begin();
   web.begin();
   Serial.println("Web server started");
-  Serial.print("WiFi IP: ");
-  Serial.println(WiFi.localIP());
 }
 
 void loop()
