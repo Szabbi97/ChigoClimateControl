@@ -1,7 +1,7 @@
 // Main entry: import modules and initialize
 import { selectMode, selectAirflow, selectFan, restoreUIState } from './uiState.js';
 import { setLang, getText, texts } from './localization.js';
-import { setMode, setAirflow, setFan, sendCommand, setTemperature } from './api.js';
+import { setMode, setAirflow, setFan, sendCommand, setTemperature, displayDeviceStatus } from './api.js';
 import { setStatus } from './status.js';
 import { applyDarkMode, setDarkMode } from './theme.js';
 import { showRainEffect, showSnowEffect, showThunderEffect, clearThunderEffect, clearWeatherEffects, showWeatherInfo, hideWeatherInfo, fetchWeatherForLocation } from './weather.js';
@@ -15,6 +15,9 @@ window.setFan = setFan;
 window.setStatus = setStatus;
 window.setTemperature = setTemperature;
 window.updateTempValue = updateTempValue;
+window.sendCommand = sendCommand;
+window.getText = getText;
+window.setLang = setLang;
 
 window.selectMode = selectMode;
 window.selectAirflow = selectAirflow;
@@ -25,6 +28,9 @@ window.autoSetTemperature = autoSetTemperature;
 restoreUIState();
 createInitialClouds();
 setTimeout(startCloudGeneration, 2000);
+
+// Check device connection after page load
+setTimeout(displayDeviceStatus, 1000);
 const savedLang = localStorage.getItem('climate_lang');
 setLang(savedLang === 'hu' ? 'hu' : 'en');
 let darkPref = localStorage.getItem('climate_darkmode');

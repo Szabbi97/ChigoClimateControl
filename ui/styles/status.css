@@ -1,0 +1,47 @@
+/* ===================================
+   STATUS & INDICATORS
+   =================================== */
+
+#status {
+    margin-top: 20px;
+    font-weight: bold;
+    padding: 10px;
+    border-radius: 6px;
+    background: #eef;
+    min-height: 32px;
+    text-align: center;
+}
+
+.status-fan {
+    display: inline-block;
+    width: 24px;
+    height: 24px;
+    background: url('data:image/svg+xml;utf8,<svg width="24" height="24" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg"><g><circle cx="12" cy="12" r="3" fill="%231976d2"/><path d="M12 2v6" stroke="%231976d2" stroke-width="2"/><path d="M12 22v-6" stroke="%231976d2" stroke-width="2"/><path d="M2 12h6" stroke="%231976d2" stroke-width="2"/><path d="M22 12h-6" stroke="%231976d2" stroke-width="2"/></g></svg>') no-repeat center/contain;
+    animation: spin 1s linear infinite;
+}
+
+.status-bulb {
+    display: inline-block;
+    width: 22px;
+    height: 22px;
+    background: url('data:image/svg+xml;utf8,<svg width="22" height="22" viewBox="0 0 22 22" fill="none" xmlns="http://www.w3.org/2000/svg"><ellipse cx="11" cy="8" rx="6" ry="7" fill="%23ffd600"/><rect x="8" y="15" width="6" height="4" rx="2" fill="%23ffd600"/></svg>') no-repeat center/contain;
+    animation: blink 0.7s steps(2, start) infinite;
+}
+
+.status-thermo {
+    display: inline-block;
+    width: 22px;
+    height: 22px;
+    background: url('data:image/svg+xml;utf8,<svg width="22" height="22" viewBox="0 0 22 22" fill="none" xmlns="http://www.w3.org/2000/svg"><rect x="9" y="4" width="4" height="10" rx="2" fill="%231976d2"/><circle cx="11" cy="17" r="4" fill="%23ff5252"/></svg>') no-repeat center/contain;
+    animation: pulse 1s ease-in-out infinite;
+}
+
+.status-spin {
+    display: inline-block;
+    width: 22px;
+    height: 22px;
+    border: 3px solid #b2d7ff;
+    border-top: 3px solid #1976d2;
+    border-radius: 50%;
+    animation: spin 1s linear infinite;
+}

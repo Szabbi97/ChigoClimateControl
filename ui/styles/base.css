@@ -1,0 +1,36 @@
+/* ===================================
+   BASE STYLES & LAYOUT
+   =================================== */
+
+body {
+    font-family: sans-serif;
+    padding: 20px;
+    background: linear-gradient(to bottom, #87CEEB 0%, #98D8E8 50%, #B8E6F2 100%);
+    min-height: 100vh;
+    position: relative;
+    overflow-x: hidden;
+    margin: 0;
+}
+
+.container {
+    max-width: 400px;
+    margin: auto;
+    background: rgba(255, 255, 255, 0.95);
+    border-radius: 10px;
+    box-shadow: 0 4px 16px rgba(0, 0, 0, 0.1);
+    padding: 24px;
+    position: relative;
+    z-index: 11;
+    backdrop-filter: blur(5px);
+    width: calc(100% - 40px);
+    min-height: auto;
+}
+
+h2 {
+    text-align: center;
+}
+
+label {
+    font-weight: bold;
+    margin-bottom: 4px;
+}

@@ -8,6 +8,7 @@ void WebServerControl::begin()
     wifi.connect();
     Serial.println("[WebServerControl] Registering HTTP handlers...");
     server.on("/", std::bind(&WebServerControl::handleRoot, this));
+    server.on("/status", std::bind(&WebServerControl::handleStatus, this));
     server.on("/on", std::bind(&WebServerControl::handleOn, this));
     server.on("/off", std::bind(&WebServerControl::handleOff, this));
     server.on("/set", std::bind(&WebServerControl::handleSet, this));
@@ -803,6 +804,11 @@ void WebServerControl::handleRoot()
     Serial.println("[WebServerControl] handleRoot() called, sending HTML page...");
     server.send_P(200, "text/html; charset=UTF-8", MAIN_page);
     Serial.println("[WebServerControl] HTML page sent.");
+}
+
+void WebServerControl::handleStatus()
+{
+    server.send(200, "application/json", "{\"status\":\"online\",\"device\":\"ESP8266\"}");
 }
 
 void WebServerControl::handleOn()

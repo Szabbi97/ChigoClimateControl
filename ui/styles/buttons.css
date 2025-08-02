@@ -1,0 +1,53 @@
+/* ===================================
+   FORM CONTROLS & BUTTONS
+   =================================== */
+
+.controls {
+    display: flex;
+    flex-direction: column;
+    gap: 12px;
+    margin-bottom: 16px;
+}
+
+button,
+select,
+input[type="submit"] {
+    margin: 0;
+    padding: 14px;
+    font-size: 18px;
+    border-radius: 6px;
+    border: 1px solid #bbb;
+    background: #e9e9e9;
+    transition: background 0.2s, box-shadow 0.2s, transform 0.15s;
+    cursor: pointer;
+    position: relative;
+    overflow: hidden;
+}
+
+button:hover,
+select:hover,
+input[type="submit"]:hover {
+    background: #d0eaff;
+    box-shadow: 0 6px 24px #1976d244;
+    transform: translateY(-2px) scale(1.04);
+}
+
+button:active {
+    transform: scale(0.97);
+    box-shadow: 0 2px 12px #1976d244;
+}
+
+button.ripple {
+    position: relative;
+    overflow: hidden;
+}
+
+.ripple-effect {
+    position: absolute;
+    border-radius: 50%;
+    transform: scale(0);
+    animation: ripple-animation 0.5s linear;
+    background: rgba(25, 118, 210, 0.25);
+    pointer-events: none;
+    z-index: 2;
+}

@@ -15,6 +15,7 @@ private:
     WiFiControl& wifi;
 
     void handleRoot();
+    void handleStatus();
     void handleOn();
     void handleOff();
     void handleSet();

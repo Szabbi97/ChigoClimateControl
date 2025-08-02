@@ -15,7 +15,9 @@ export const texts = {
         status_mode: "Setting mode...",
         status_airflow: "Setting airflow...",
         status_fan: "Setting fan speed...",
-        error: "An error occurred!"
+        error: "An error occurred!",
+        device_connected: "Device connected and ready",
+        device_disconnected: "Warning: Climate control device not connected"
     },
     hu: {
         title: "Chigo klíma vezérlés",
@@ -32,7 +34,9 @@ export const texts = {
         status_mode: "Mód beállítása...",
         status_airflow: "Légáram beállítása...",
         status_fan: "Ventilátor sebesség beállítása...",
-        error: "Hiba történt!"
+        error: "Hiba történt!",
+        device_connected: "Eszköz csatlakoztatva és készen áll",
+        device_disconnected: "Figyelem: Klíma vezérlő eszköz nincs csatlakoztatva"
     }
 };
 let currentLang = 'en';

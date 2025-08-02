@@ -1,0 +1,80 @@
+/* ===================================
+   DARK MODE STYLES
+   =================================== */
+
+body.darkmode {
+    background: linear-gradient(to bottom, #222 0%, #333 50%, #444 100%);
+    color: #eee;
+}
+
+.container.darkmode {
+    background: rgba(34, 34, 34, 0.97);
+    box-shadow: 0 4px 16px #0008;
+    color: #eee;
+}
+
+.slider-label.darkmode,
+.temp-value.darkmode,
+label.darkmode {
+    color: #90caf9;
+}
+
+button.darkmode,
+select.darkmode,
+input[type="submit"].darkmode {
+    background: #333;
+    color: #90caf9;
+    border: 1px solid #444;
+}
+
+button.darkmode:hover,
+select.darkmode:hover,
+input[type="submit"].darkmode:hover {
+    background: #1976d2;
+    color: #fff;
+    box-shadow: 0 6px 24px #1976d244;
+}
+
+.mode-btn.darkmode,
+.airflow-btn.darkmode,
+.fan-btn.darkmode {
+    background: #222;
+    color: #90caf9;
+    box-shadow: 0 2px 8px #1976d244;
+}
+
+.mode-btn.darkmode.selected,
+.airflow-btn.darkmode.selected,
+.fan-btn.darkmode.selected {
+    background: #1976d2;
+    color: #fff;
+    box-shadow: 0 4px 16px #1976d288;
+}
+
+.power-on.darkmode {
+    background: #388e3c;
+    color: #fff;
+    border: 1px solid #388e3c;
+    box-shadow: 0 2px 6px #388e3c88;
+}
+
+.power-off.darkmode {
+    background: #d32f2f;
+    color: #fff;
+    border: 1px solid #d32f2f;
+    box-shadow: 0 2px 6px #d32f2f88;
+}
+
+#status.darkmode {
+    background: #222;
+    color: #90caf9;
+}
+
+#lang-switcher.darkmode {
+    background: #222;
+    box-shadow: 0 2px 8px #0008;
+}
+
+#lang-switcher button.darkmode {
+    color: #90caf9;
+}

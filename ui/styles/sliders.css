@@ -1,0 +1,92 @@
+/* ===================================
+   SLIDERS & INPUT RANGES
+   =================================== */
+
+.slider-container {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    margin-bottom: 18px;
+}
+
+.slider-label {
+    font-weight: bold;
+    margin-bottom: 8px;
+}
+
+.temp-value {
+    font-size: 1.2em;
+    font-weight: bold;
+    margin-bottom: 8px;
+    color: #1976d2;
+}
+
+input[type="range"] {
+    width: 100%;
+    accent-color: #1976d2;
+    margin-bottom: 8px;
+    height: 4px;
+    border-radius: 4px;
+    background: #e0e0e0;
+    position: relative;
+    z-index: 2;
+}
+
+input[type="range"]:hover {
+    background: #b2d7ff;
+    box-shadow: 0 2px 12px #1976d244;
+    transition: background 0.2s, box-shadow 0.2s;
+}
+
+/* Hide default thumb for Chrome, Safari, Edge */
+input[type="range"]::-webkit-slider-thumb {
+    -webkit-appearance: none;
+    appearance: none;
+    width: 36px;
+    height: 36px;
+    border-radius: 50%;
+    background: #fff center/70% no-repeat;
+    border: 2px solid #bbb;
+    box-shadow: 0 2px 6px #b2d7ff;
+    cursor: pointer;
+    transition: border-color 0.2s, box-shadow 0.2s;
+}
+
+input[type="range"]:focus::-webkit-slider-thumb {
+    border-color: #1976d2;
+    box-shadow: 0 4px 12px #b2d7ff;
+}
+
+/* Hide default thumb for Firefox */
+input[type="range"]::-moz-range-thumb {
+    width: 36px;
+    height: 36px;
+    border-radius: 50%;
+    background: #fff center/70% no-repeat;
+    border: 2px solid #bbb;
+    box-shadow: 0 2px 6px #b2d7ff;
+    cursor: pointer;
+    transition: border-color 0.2s, box-shadow 0.2s;
+}
+
+input[type="range"]:focus::-moz-range-thumb {
+    border-color: #1976d2;
+    box-shadow: 0 4px 12px #b2d7ff;
+}
+
+/* Hide default thumb for IE */
+input[type="range"]::-ms-thumb {
+    width: 36px;
+    height: 36px;
+    border-radius: 50%;
+    background: #fff center/70% no-repeat;
+    border: 2px solid #bbb;
+    box-shadow: 0 2px 6px #b2d7ff;
+    cursor: pointer;
+    transition: border-color 0.2s, box-shadow 0.2s;
+}
+
+/* Remove outline for Firefox */
+input[type="range"]::-moz-focus-outer {
+    border: 0;
+}

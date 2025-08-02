@@ -1,0 +1,47 @@
+/* ===================================
+   MODE, AIRFLOW & FAN BUTTONS
+   =================================== */
+
+.button-group {
+    display: flex;
+    gap: 10px;
+    justify-content: center;
+    margin-top: 8px;
+}
+
+.mode-btn,
+.airflow-btn,
+.fan-btn {
+    font-size: 1.3em;
+    padding: 10px 18px;
+    border-radius: 8px;
+    border: none;
+    background: #e0f7fa;
+    color: #1976d2;
+    box-shadow: 0 2px 8px #b2d7ff44;
+    cursor: pointer;
+    transition: background 0.2s, box-shadow 0.2s, color 0.2s;
+    outline: none;
+    font-weight: bold;
+}
+
+.mode-btn.selected,
+.airflow-btn.selected,
+.fan-btn.selected {
+    background: #1976d2;
+    color: #fff;
+    box-shadow: 0 4px 16px #1976d288;
+}
+
+.mode-btn:active,
+.airflow-btn:active,
+.fan-btn:active {
+    background: #90caf9;
+    color: #1976d2;
+}
+
+.slider-container.mode-group,
+.slider-container.airflow-group,
+.slider-container.fan-group {
+    margin-bottom: 10px;
+}
