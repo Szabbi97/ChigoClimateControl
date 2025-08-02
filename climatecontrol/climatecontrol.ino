@@ -6,8 +6,8 @@
 #include "WebServerControl.h"
 
 
-const char *ssid = "YOUR_SSID"; // Replace with your WiFi SSID
-const char *password = "YOUR_PASSWORD"; // Replace with your WiFi password
+const char *ssid = "YOUR_WIFI_SSID"; // Replace with your WiFi SSID
+const char *password = "YOUR_WIFI_PASSWORD"; // Replace with your WiFi password
 
 ESP8266WebServer server(80);
 WiFiControl wifi(ssid, password);

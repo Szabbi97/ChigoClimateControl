@@ -63,7 +63,14 @@ export function fetchWeatherForLocation() {
     navigator.geolocation.getCurrentPosition(function (pos) {
         const lat = pos.coords.latitude;
         const lon = pos.coords.longitude;
+        // Note: You need to get your own API key from https://openweathermap.org/api
+        // and replace 'YOUR_API_KEY' with your actual key
         const apiKey = 'YOUR_API_KEY';
+        if (apiKey === 'YOUR_API_KEY') {
+            console.warn('Weather API key not configured');
+            hideWeatherInfo();
+            return;
+        }
         const url = `https://api.openweathermap.org/data/2.5/weather?lat=${lat}&lon=${lon}&units=metric&lang=hu&appid=${apiKey}`;
         fetch(url)
             .then(res => res.json())

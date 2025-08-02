@@ -1,4 +1,5 @@
 #include "WebServerControl.h"
+#include "WebResources.h"  // Generated header with embedded files
 
 WebServerControl::WebServerControl(ESP8266WebServer &server, ChigoIRControl &chigoIR, WiFiControl &wifi)
     : server(server), chigoIR(chigoIR), wifi(wifi) {}
@@ -7,6 +8,8 @@ void WebServerControl::begin()
 {
     wifi.connect();
     Serial.println("[WebServerControl] Registering HTTP handlers...");
+    
+    // Main routes
     server.on("/", std::bind(&WebServerControl::handleRoot, this));
     server.on("/status", std::bind(&WebServerControl::handleStatus, this));
     server.on("/on", std::bind(&WebServerControl::handleOn, this));
@@ -15,6 +18,34 @@ void WebServerControl::begin()
     server.on("/setmode", std::bind(&WebServerControl::handleSetMode, this));
     server.on("/setairflow", std::bind(&WebServerControl::handleSetAirflow, this));
     server.on("/setfan", std::bind(&WebServerControl::handleSetFan, this));
+    
+    // Static file routes
+    server.on("/scripts/main.js", [this]() { server.send_P(200, "application/javascript", MAIN_JS); });
+    server.on("/scripts/api.js", [this]() { server.send_P(200, "application/javascript", API_JS); });
+    server.on("/scripts/localization.js", [this]() { server.send_P(200, "application/javascript", LOCALIZATION_JS); });
+    server.on("/scripts/status.js", [this]() { server.send_P(200, "application/javascript", STATUS_JS); });
+    server.on("/scripts/temperature.js", [this]() { server.send_P(200, "application/javascript", TEMPERATURE_JS); });
+    server.on("/scripts/theme.js", [this]() { server.send_P(200, "application/javascript", THEME_JS); });
+    server.on("/scripts/uiState.js", [this]() { server.send_P(200, "application/javascript", UISTATE_JS); });
+    server.on("/scripts/weather.js", [this]() { server.send_P(200, "application/javascript", WEATHER_JS); });
+    server.on("/scripts/cloud.js", [this]() { server.send_P(200, "application/javascript", CLOUD_JS); });
+    
+    server.on("/styles/main.css", [this]() { server.send_P(200, "text/css", MAIN_CSS); });
+    server.on("/styles/base.css", [this]() { server.send_P(200, "text/css", BASE_CSS); });
+    server.on("/styles/animations.css", [this]() { server.send_P(200, "text/css", ANIMATIONS_CSS); });
+    server.on("/styles/buttons.css", [this]() { server.send_P(200, "text/css", BUTTONS_CSS); });
+    server.on("/styles/clouds.css", [this]() { server.send_P(200, "text/css", CLOUDS_CSS); });
+    server.on("/styles/control-buttons.css", [this]() { server.send_P(200, "text/css", CONTROL_BUTTONS_CSS); });
+    server.on("/styles/dark-mode.css", [this]() { server.send_P(200, "text/css", DARK_MODE_CSS); });
+    server.on("/styles/language-switcher.css", [this]() { server.send_P(200, "text/css", LANGUAGE_SWITCHER_CSS); });
+    server.on("/styles/power-buttons.css", [this]() { server.send_P(200, "text/css", POWER_BUTTONS_CSS); });
+    server.on("/styles/responsive.css", [this]() { server.send_P(200, "text/css", RESPONSIVE_CSS); });
+    server.on("/styles/sliders.css", [this]() { server.send_P(200, "text/css", SLIDERS_CSS); });
+    server.on("/styles/status.css", [this]() { server.send_P(200, "text/css", STATUS_CSS); });
+    server.on("/styles/theme-switcher.css", [this]() { server.send_P(200, "text/css", THEME_SWITCHER_CSS); });
+    server.on("/styles/weather-bg.css", [this]() { server.send_P(200, "text/css", WEATHER_BG_CSS); });
+    server.on("/styles/weather-effects.css", [this]() { server.send_P(200, "text/css", WEATHER_EFFECTS_CSS); });
+    
     server.begin();
     Serial.println("[WebServerControl] HTTP server started.");
 }
@@ -24,786 +55,10 @@ void WebServerControl::handleClient()
     server.handleClient();
 }
 
-
-// Move the HTML to PROGMEM
-const char MAIN_page[] PROGMEM = R"rawliteral(
-<!DOCTYPE html>
-<html lang="en">
-
-<head>
-  <meta charset="UTF-8">
-  <title>Climate Control</title>
-  <meta name="viewport" content="width=device-width, initial-scale=1">
-
-
-
-  <style>
-    body {
-      font-family: sans-serif;
-      padding: 20px;
-      background: linear-gradient(to bottom, #87CEEB 0%, #98D8E8 50%, #B8E6F2 100%);
-      min-height: 100vh;
-      position: relative;
-      overflow-x: hidden;
-      margin: 0;
-    }
-
-    /* Cloud animations */
-    .clouds {
-      position: fixed;
-      top: 0;
-      left: 0;
-      width: 100%;
-      height: 100%;
-      pointer-events: none;
-      z-index: 0;
-    }
-
-    .cloud {
-      position: absolute;
-      background: rgba(255, 255, 255, 0.8);
-      border-radius: 50px;
-      opacity: 0;
-      transition: opacity 2s ease-in-out;
-    }
-
-    .cloud:before,
-    .cloud:after {
-      content: '';
-      position: absolute;
-      background: rgba(255, 255, 255, 0.8);
-      border-radius: 50px;
-    }
-
-    .cloud.visible {
-      opacity: 0.7;
-    }
-
-    @keyframes floatAcross {
-      0% {
-        left: -150px;
-        opacity: 0;
-      }
-
-      10% {
-        opacity: 0.7;
-      }
-
-      90% {
-        opacity: 0.7;
-      }
-
-      100% {
-        left: calc(100% + 150px);
-        opacity: 0;
-      }
-    }
-
-    @keyframes floatFromPosition {
-      0% {
-        opacity: 0.7;
-      }
-
-      90% {
-        opacity: 0.7;
-      }
-
-      100% {
-        left: calc(100% + 150px);
-        opacity: 0;
-      }
-    }
-
-    .container {
-      max-width: 400px;
-      margin: auto;
-      background: rgba(255, 255, 255, 0.95);
-      border-radius: 10px;
-      box-shadow: 0 4px 16px rgba(0, 0, 0, 0.1);
-      padding: 24px;
-      position: relative;
-      z-index: 1;
-      backdrop-filter: blur(5px);
-      width: calc(100% - 40px);
-      min-height: auto;
-    }
-
-    h2 {
-      text-align: center;
-    }
-
-    .controls {
-      display: flex;
-      flex-direction: column;
-      gap: 12px;
-      margin-bottom: 16px;
-    }
-
-    button,
-    select,
-    input[type="submit"] {
-      margin: 0;
-      padding: 14px;
-      font-size: 18px;
-      border-radius: 6px;
-      border: 1px solid #bbb;
-      background: #e9e9e9;
-      transition: background 0.2s;
-      cursor: pointer;
-    }
-
-    button:hover,
-    input[type="submit"]:hover {
-      background: #d0eaff;
-    }
-
-    label {
-      font-weight: bold;
-      margin-bottom: 4px;
-    }
-
-    #status {
-      margin-top: 20px;
-      font-weight: bold;
-      padding: 10px;
-      border-radius: 6px;
-      background: #eef;
-      min-height: 32px;
-      text-align: center;
-    }
-
-    .power-buttons {
-      display: flex;
-      gap: 16px;
-      justify-content: center;
-      margin-bottom: 12px;
-      flex-wrap: wrap;
-    }
-
-    .power-on,
-    .power-off {
-      flex: 1;
-      min-width: 120px;
-      text-align: center;
-    }
-
-    .power-on {
-      background: #7cffb0;
-      color: #155724;
-      border: 1px solid #7cffb0;
-      font-weight: bold;
-      box-shadow: 0 2px 6px #b2f7c1;
-      transition: background 0.2s, box-shadow 0.2s;
-    }
-
-    .power-on:hover {
-      background: #4be38c;
-      box-shadow: 0 4px 12px #b2f7c1;
-    }
-
-    .power-off {
-      background: #ff7b7b;
-      color: #721c24;
-      border: 1px solid #ff7b7b;
-      font-weight: bold;
-      box-shadow: 0 2px 6px #f7b2b2;
-      transition: background 0.2s, box-shadow 0.2s;
-    }
-
-    .power-off:hover {
-      background: #ff5252;
-      box-shadow: 0 4px 12px #f7b2b2;
-    }
-
-    .slider-container {
-      display: flex;
-      flex-direction: column;
-      align-items: center;
-      margin-bottom: 18px;
-    }
-
-    .slider-label {
-      font-weight: bold;
-      margin-bottom: 8px;
-    }
-
-    .temp-value {
-      font-size: 1.2em;
-      font-weight: bold;
-      margin-bottom: 8px;
-      color: #1976d2;
-    }
-
-    input[type="range"] {
-      width: 100%;
-      accent-color: #1976d2;
-      margin-bottom: 8px;
-      height: 4px;
-      border-radius: 4px;
-      background: #e0e0e0;
-      position: relative;
-      z-index: 2;
-    }
-
-    /* Hide default thumb for Chrome, Safari, Edge */
-    input[type="range"]::-webkit-slider-thumb {
-      -webkit-appearance: none;
-      appearance: none;
-      width: 36px;
-      height: 36px;
-      border-radius: 50%;
-      background: #fff center/70% no-repeat;
-      border: 2px solid #bbb;
-      box-shadow: 0 2px 6px #b2d7ff;
-      cursor: pointer;
-      transition: border-color 0.2s, box-shadow 0.2s;
-    }
-
-    input[type="range"]:focus::-webkit-slider-thumb {
-      border-color: #1976d2;
-      box-shadow: 0 4px 12px #b2d7ff;
-    }
-
-    /* Hide default thumb for Firefox */
-    input[type="range"]::-moz-range-thumb {
-      width: 36px;
-      height: 36px;
-      border-radius: 50%;
-      background: #fff center/70% no-repeat;
-      border: 2px solid #bbb;
-      box-shadow: 0 2px 6px #b2d7ff;
-      cursor: pointer;
-      transition: border-color 0.2s, box-shadow 0.2s;
-    }
-
-    input[type="range"]:focus::-moz-range-thumb {
-      border-color: #1976d2;
-      box-shadow: 0 4px 12px #b2d7ff;
-    }
-
-    /* Hide default thumb for IE */
-    input[type="range"]::-ms-thumb {
-      width: 36px;
-      height: 36px;
-      border-radius: 50%;
-      background: #fff center/70% no-repeat;
-      border: 2px solid #bbb;
-      box-shadow: 0 2px 6px #b2d7ff;
-      cursor: pointer;
-      transition: border-color 0.2s, box-shadow 0.2s;
-    }
-
-    /* Remove outline for Firefox */
-    input[type="range"]::-moz-focus-outer {
-      border: 0;
-    }
-
-    @media (max-width: 500px) {
-      body {
-        padding: 10px;
-      }
-
-      .container {
-        padding: 16px;
-        width: calc(100% - 40px);
-        margin: 10px auto;
-      }
-
-      button,
-      select,
-      input[type="submit"] {
-        font-size: 16px;
-        padding: 12px;
-        min-height: 48px;
-        /* Touch target size */
-      }
-
-      .power-buttons {
-        gap: 12px;
-      }
-
-      .power-on,
-      .power-off {
-        min-width: 100px;
-      }
-
-      h2 {
-        font-size: 1.3em;
-        margin: 10px 0;
-      }
-
-      .temp-value {
-        font-size: 1.1em;
-      }
-
-      .slider-container {
-        margin-bottom: 16px;
-      }
-
-      input[type="range"] {
-        height: 6px;
-        margin-bottom: 12px;
-      }
-
-      input[type="range"]::-webkit-slider-thumb {
-        width: 40px;
-        height: 40px;
-      }
-
-      input[type="range"]::-moz-range-thumb {
-        width: 40px;
-        height: 40px;
-      }
-
-      #status {
-        margin-top: 16px;
-        padding: 12px;
-        font-size: 14px;
-      }
-    }
-
-    @media (max-width: 360px) {
-      .container {
-        padding: 12px;
-      }
-
-      .power-buttons {
-        flex-direction: column;
-        gap: 8px;
-      }
-
-      .power-on,
-      .power-off {
-        width: 100%;
-        min-width: auto;
-      }
-
-      button,
-      select,
-      input[type="submit"] {
-        font-size: 15px;
-        padding: 10px;
-      }
-    }
-  </style>
-</head>
-
-<body>
-  <!-- Animated clouds background -->
-  <div class="clouds" id="clouds-container"></div>
-  <!-- Language selector fixed to bottom right with flags, outside container -->
-  <div id="lang-switcher">
-    <button id="lang-en" onclick="setLang('en')" title="English" aria-label="English" type="button">
-      <span style="font-size:22px;">🇬🇧</span>
-    </button>
-    <button id="lang-hu" onclick="setLang('hu')" title="Magyar" aria-label="Magyar" type="button">
-      <span style="font-size:22px;">🇭🇺</span>
-    </button>
-  </div>
-  <div class="container">
-    <style>
-      #lang-switcher {
-        position: fixed;
-        right: 18px;
-        bottom: 18px;
-        z-index: 100;
-        display: flex;
-        gap: 8px;
-        background: rgba(255, 255, 255, 0.85);
-        border-radius: 24px;
-        box-shadow: 0 2px 8px rgba(0, 0, 0, 0.08);
-        padding: 6px 10px;
-        align-items: center;
-      }
-
-      #lang-switcher button {
-        background: none;
-        border: none;
-        cursor: pointer;
-        outline: none;
-        padding: 2px 4px;
-        border-radius: 50%;
-        transition: background 0.2s;
-        font-size: 22px;
-        line-height: 1;
-      }
-
-      #lang-switcher button.selected,
-      #lang-switcher button:focus {
-        background: #d0eaff;
-      }
-
-      #lang-switcher button:active {
-        background: #b2f7c1;
-      }
-
-      @media (max-width: 500px) {
-        #lang-switcher {
-          right: 8px;
-          bottom: 8px;
-          padding: 4px 6px;
-        }
-
-        #lang-switcher button {
-          font-size: 18px;
-        }
-      }
-    </style>
-    <h2 id="title"></h2>
-    <div class="controls">
-      <form onsubmit="return false;">
-        <div class="slider-container" style="position:relative;">
-          <label for="temp" class="slider-label" id="label-temp"></label>
-          <div id="temp-value" class="temp-value">24 °C</div>
-          <input type="range" id="temp" name="temp" min="18" max="30" value="24"
-            oninput="updateTempValue(this.value); autoSetTemperature(this.value);"
-            style="position:relative; z-index:2;">
-        </div>
-        <div class="slider-container mode-group">
-          <label class="slider-label" id="label-mode"></label>
-          <div class="button-group" id="mode-group">
-            <button type="button" class="mode-btn" data-value="1" onclick="selectMode(this)">🔥</button>
-            <button type="button" class="mode-btn" data-value="2" onclick="selectMode(this)">💧</button>
-            <button type="button" class="mode-btn" data-value="3" onclick="selectMode(this)">🌬️</button>
-            <button type="button" class="mode-btn" data-value="4" onclick="selectMode(this)">❄️</button>
-          </div>
-        </div>
-        <div class="slider-container airflow-group">
-          <label class="slider-label" id="label-airflow"></label>
-          <div class="button-group" id="airflow-group">
-            <button type="button" class="airflow-btn" data-value="0" onclick="selectAirflow(this)">🚫</button>
-            <button type="button" class="airflow-btn" data-value="1" onclick="selectAirflow(this)">1f</button>
-            <button type="button" class="airflow-btn" data-value="2" onclick="selectAirflow(this)">↕️</button>
-          </div>
-        </div>
-        <div class="slider-container fan-group">
-          <label class="slider-label" id="label-fan"></label>
-          <div class="button-group" id="fan-group">
-            <button type="button" class="fan-btn" data-value="0" onclick="selectFan(this)">⚙️</button>
-            <button type="button" class="fan-btn" data-value="1" onclick="selectFan(this)">Low</button>
-            <button type="button" class="fan-btn" data-value="2" onclick="selectFan(this)">Medium</button>
-            <button type="button" class="fan-btn" data-value="3" onclick="selectFan(this)">High</button>
-          </div>
-        </div>
-        <style>
-          .button-group {
-            display: flex;
-            gap: 10px;
-            justify-content: center;
-            margin-top: 8px;
-          }
-
-          .mode-btn,
-          .airflow-btn,
-          .fan-btn {
-            font-size: 1.3em;
-            padding: 10px 18px;
-            border-radius: 8px;
-            border: none;
-            background: #e0f7fa;
-            color: #1976d2;
-            box-shadow: 0 2px 8px #b2d7ff44;
-            cursor: pointer;
-            transition: background 0.2s, box-shadow 0.2s, color 0.2s;
-            outline: none;
-            font-weight: bold;
-          }
-
-          .mode-btn.selected,
-          .airflow-btn.selected,
-          .fan-btn.selected {
-            background: #1976d2;
-            color: #fff;
-            box-shadow: 0 4px 16px #1976d288;
-          }
-
-          .mode-btn:active,
-          .airflow-btn:active,
-          .fan-btn:active {
-            background: #90caf9;
-            color: #1976d2;
-          }
-
-          .slider-container.mode-group,
-          .slider-container.airflow-group,
-          .slider-container.fan-group {
-            margin-bottom: 10px;
-          }
-
-          @media (max-width: 500px) {
-            .button-group {
-              gap: 6px;
-            }
-
-            .mode-btn,
-            .airflow-btn,
-            .fan-btn {
-              font-size: 1em;
-              padding: 8px 10px;
-            }
-          }
-        </style>
-      </form>
-      <div class="power-buttons">
-        <button class="power-on" id="btn-on" onclick="sendCommand('/on', getText('on'))"></button>
-        <button class="power-off" id="btn-off" onclick="sendCommand('/off', getText('off'))"></button>
-      </div>
-    </div>
-    <div id="status"></div>
-  </div>
-  <script>
-    // Gombcsoportos vezérlők JS
-    function selectMode(btn) {
-      document.querySelectorAll('.mode-btn').forEach(b => b.classList.remove('selected'));
-      btn.classList.add('selected');
-      const val = btn.getAttribute('data-value');
-      setMode(val);
-      localStorage.setItem('climate_mode', val);
-    }
-    function selectAirflow(btn) {
-      document.querySelectorAll('.airflow-btn').forEach(b => b.classList.remove('selected'));
-      btn.classList.add('selected');
-      const val = btn.getAttribute('data-value');
-      setAirflow(val);
-      localStorage.setItem('climate_airflow', val);
-    }
-    function selectFan(btn) {
-      document.querySelectorAll('.fan-btn').forEach(b => b.classList.remove('selected'));
-      btn.classList.add('selected');
-      const val = btn.getAttribute('data-value');
-      setFan(val);
-      localStorage.setItem('climate_fan', val);
-    }
-    // Alapértelmezett kiválasztás
-    document.addEventListener('DOMContentLoaded', function () {
-      // Visszatöltés localStorage-ból
-      const savedMode = localStorage.getItem('climate_mode') || '1';
-      const savedAirflow = localStorage.getItem('climate_airflow') || '0';
-      const savedFan = localStorage.getItem('climate_fan') || '0';
-      const savedTemp = localStorage.getItem('climate_temp') || '24';
-      // Mód gomb kijelölés
-      const modeBtn = document.querySelector('.mode-btn[data-value="' + savedMode + '"]');
-      if (modeBtn) modeBtn.classList.add('selected');
-      // Légáram gomb kijelölés
-      const airflowBtn = document.querySelector('.airflow-btn[data-value="' + savedAirflow + '"]');
-      if (airflowBtn) airflowBtn.classList.add('selected');
-      // Ventilátor gomb kijelölés
-      const fanBtn = document.querySelector('.fan-btn[data-value="' + savedFan + '"]');
-      if (fanBtn) fanBtn.classList.add('selected');
-      // Hőmérséklet slider visszaállítás
-      const slider = document.getElementById('temp');
-      slider.value = savedTemp;
-      updateTempValue(savedTemp);
-    });
-    // Language dictionary
-    const texts = {
-      en: {
-        title: "Chigo Climate Control",
-        temp: "Temperature:",
-        mode: "Mode:",
-        airflow: "Airflow:",
-        fan: "Fan speed:",
-        on: "Power On",
-        off: "Power Off",
-        status_idle: "Status: no action",
-        status_on: "Powering on (in progress...)",
-        status_off: "Powering off (in progress...)",
-        status_set: val => `Setting temperature (${val}°C)...`,
-        status_mode: "Setting mode...",
-        status_airflow: "Setting airflow...",
-        status_fan: "Setting fan speed...",
-        error: "An error occurred!"
-      },
-      hu: {
-        title: "Chigo klíma vezérlés",
-        temp: "Hőmérséklet:",
-        mode: "Mód:",
-        airflow: "Légáram:",
-        fan: "Ventilátor sebesség:",
-        on: "Bekapcsolás",
-        off: "Kikapcsolás",
-        status_idle: "Állapot: nincs művelet",
-        status_on: "Bekapcsolás (folyamatban...)",
-        status_off: "Kikapcsolás (folyamatban...)",
-        status_set: val => `Hőmérséklet beállítása (${val}°C)...`,
-        status_mode: "Mód beállítása...",
-        status_airflow: "Légáram beállítása...",
-        status_fan: "Ventilátor sebesség beállítása...",
-        error: "Hiba történt!"
-      }
-    };
-    // Set initial language based on localStorage or default to English
-    function setMode(val) {
-      setStatus(getText('status_mode'), true);
-      fetch('/setmode?mode=' + val)
-        .then(response => response.text())
-        .then(text => setStatus(text))
-        .catch(() => setStatus(getText('error')));
-    }
-    function setAirflow(val) {
-      setStatus(getText('status_airflow'), true);
-      fetch('/setairflow?airflow=' + val)
-        .then(response => response.text())
-        .then(text => setStatus(text))
-        .catch(() => setStatus(getText('error')));
-    }
-    function setFan(val) {
-      setStatus(getText('status_fan'), true);
-      fetch('/setfan?fan=' + val)
-        .then(response => response.text())
-        .then(text => setStatus(text))
-        .catch(() => setStatus(getText('error')));
-    }
-    // Language management
-    // Store current language in localStorage
-    let currentLang = 'en';
-    function setLang(lang) {
-      currentLang = lang;
-      localStorage.setItem('climate_lang', lang);
-      document.getElementById('title').innerText = texts[lang].title;
-      document.getElementById('label-temp').innerText = texts[lang].temp;
-      document.getElementById('label-mode').innerText = texts[lang].mode;
-      document.getElementById('label-airflow').innerText = texts[lang].airflow;
-      document.getElementById('label-fan').innerText = texts[lang].fan;
-      document.getElementById('btn-on').innerText = texts[lang].on;
-      document.getElementById('btn-off').innerText = texts[lang].off;
-      document.getElementById('status').innerText = texts[lang].status_idle;
-      // Highlight selected flag
-      document.getElementById('lang-en').classList.toggle('selected', lang === 'en');
-      document.getElementById('lang-hu').classList.toggle('selected', lang === 'hu');
-    }
-    function getText(key) {
-      return typeof texts[currentLang][key] === 'function' ? texts[currentLang][key](document.getElementById('temp').value) : texts[currentLang][key];
-    }
-    // Cloud animation logic (comments in English)
-    function createCloud(initialPosition = null, isInitial = false) {
-      const cloudsContainer = document.getElementById('clouds-container');
-      const cloud = document.createElement('div');
-      cloud.className = 'cloud';
-      // Random cloud size and position
-      const size = Math.random() * 60 + 40; // 40-100px width
-      const height = size * 0.5; // height is half the width
-      const topPosition = Math.random() * 70 + 5; // 5-75% height
-      const duration = Math.random() * 20 + 25; // 25-45 seconds
-      cloud.style.width = size + 'px';
-      cloud.style.height = height + 'px';
-      cloud.style.top = topPosition + '%';
-      // If initial position is given (on page load)
-      if (initialPosition !== null && isInitial) {
-        // Initial clouds: already in place, immediately visible
-        cloud.style.left = initialPosition + 'px';
-        cloud.style.opacity = '0.7';
-        // Continue floating from current position
-        const remainingDistance = window.innerWidth + 150 - initialPosition;
-        const remainingDuration = (remainingDistance / (window.innerWidth + 300)) * duration;
-        cloud.style.animation = `floatFromPosition ${remainingDuration}s linear`;
-      } else {
-        // New clouds: float in from the left
-        cloud.style.animation = `floatAcross ${duration}s linear`;
-      }
-      // Random before and after elements (cloud shape)
-      const beforeSize = size * 0.6;
-      const afterSize = size * 0.7;
-      // Unique style element for each cloud
-      const style = document.createElement('style');
-      const cloudId = 'cloud-' + Date.now() + '-' + Math.random().toString(36).substr(2, 9);
-      cloud.id = cloudId;
-      style.textContent = `
-        #${cloudId}:before {
-          width: ${beforeSize}px;
-          height: ${beforeSize}px;
-          top: ${-beforeSize / 2}px;
-          left: ${size * 0.15}px;
-        }
-        #${cloudId}:after {
-          width: ${afterSize}px;
-          height: ${height}px;
-          top: ${-height * 0.3}px;
-          right: ${size * 0.15}px;
-        }
-      `;
-      document.head.appendChild(style);
-      cloudsContainer.appendChild(cloud);
-      // Remove cloud at the end of animation
-      const cleanupDuration = isInitial && initialPosition !== null ?
-        ((window.innerWidth + 150 - initialPosition) / (window.innerWidth + 300)) * duration * 1000 :
-        duration * 1000;
-      setTimeout(() => {
-        if (cloud.parentNode) {
-          cloud.parentNode.removeChild(cloud);
-        }
-        if (style.parentNode) {
-          style.parentNode.removeChild(style);
-        }
-      }, cleanupDuration);
-    }
-    // Create initial clouds on page load
-    function createInitialClouds() {
-      const numClouds = Math.floor(Math.random() * 6) + 10; // 10-15 clouds
-      for (let i = 0; i < numClouds; i++) {
-        // Random initial position within screen width (0 to window.innerWidth)
-        const initialX = Math.random() * (window.innerWidth - 100); // 100px margin on right
-        // Create immediately, no delay
-        createCloud(initialX, true); // true = initial cloud
-      }
-    }
-    // Continuously generate clouds
-    function startCloudGeneration() {
-      createCloud();
-      // Next cloud in 2-5 seconds (fast generation)
-      const nextCloudDelay = Math.random() * 3000 + 2000;
-      setTimeout(startCloudGeneration, nextCloudDelay);
-    }
-    // Start on page load
-    document.addEventListener('DOMContentLoaded', function () {
-      createInitialClouds();
-      setTimeout(startCloudGeneration, 2000);
-      const savedLang = localStorage.getItem('climate_lang');
-      setLang(savedLang === 'hu' ? 'hu' : 'en');
-    });
-    function setStatus(msg, loading = false) {
-      const status = document.getElementById('status');
-      status.innerText = msg;
-      status.style.color = loading ? "#888" : "#222";
-    }
-    function sendCommand(path, msg) {
-      setStatus(msg + (currentLang === 'en' ? ' (in progress...)' : ' (folyamatban...)'), true);
-      fetch(path)
-        .then(response => response.text())
-        .then(text => setStatus(text))
-        .catch(() => setStatus(getText('error')));
-    }
-    function setTemperature(val) {
-      setStatus(getText('status_set'), true);
-      fetch('/set?temp=' + val)
-        .then(response => response.text())
-        .then(text => setStatus(text))
-        .catch(() => setStatus(getText('error')));
-      localStorage.setItem('climate_temp', val);
-    }
-    function updateTempValue(val) {
-      document.getElementById('temp-value').innerText = val + ' °C';
-    }
-    // Automatically set temperature on slider change
-    let tempTimeout;
-    function autoSetTemperature(val) {
-      clearTimeout(tempTimeout);
-      tempTimeout = setTimeout(() => setTemperature(val), 400);
-    }
-    // Update on page load
-    const slider = document.getElementById('temp');
-    updateTempValue(slider.value);
-  </script>
-</body>
-
-</html>
-)rawliteral";
-
 void WebServerControl::handleRoot()
 {
-    Serial.println("[WebServerControl] handleRoot() called, sending HTML page...");
-    server.send_P(200, "text/html; charset=UTF-8", MAIN_page);
-    Serial.println("[WebServerControl] HTML page sent.");
+    Serial.println("[WebServerControl] handleRoot() called, serving embedded HTML");
+    server.send_P(200, "text/html; charset=UTF-8", MAIN_HTML);
 }
 
 void WebServerControl::handleStatus()
@@ -828,9 +83,10 @@ void WebServerControl::handleSet()
     if (server.hasArg("temp"))
     {
         int temp = server.arg("temp").toInt();
-        if (chigoIR.setTemperature(temp))
+        if (temp >= 18 && temp <= 30)
         {
-            server.send(200, "text/html; charset=UTF-8", "Set to: " + String(temp) + " °C");
+            chigoIR.setTemperature(temp);
+            server.send(200, "text/html; charset=UTF-8", "Temperature set");
         }
         else
         {
@@ -843,14 +99,14 @@ void WebServerControl::handleSet()
     }
 }
 
-// Mode handler
 void WebServerControl::handleSetMode()
 {
     if (server.hasArg("mode"))
     {
         int mode = server.arg("mode").toInt();
-        if (chigoIR.setMode(mode))
+        if (mode >= 1 && mode <= 4)
         {
+            chigoIR.setMode(mode);
             server.send(200, "text/html; charset=UTF-8", "Mode set");
         }
         else
@@ -864,14 +120,14 @@ void WebServerControl::handleSetMode()
     }
 }
 
-// Airflow handler
 void WebServerControl::handleSetAirflow()
 {
     if (server.hasArg("airflow"))
     {
         int airflow = server.arg("airflow").toInt();
-        if (chigoIR.setAirflow(airflow))
+        if (airflow >= 0 && airflow <= 2)
         {
+            chigoIR.setAirflow(airflow);
             server.send(200, "text/html; charset=UTF-8", "Airflow set");
         }
         else
@@ -885,14 +141,14 @@ void WebServerControl::handleSetAirflow()
     }
 }
 
-// Fan handler
 void WebServerControl::handleSetFan()
 {
     if (server.hasArg("fan"))
     {
         int fan = server.arg("fan").toInt();
-        if (chigoIR.setFanSpeed(fan))
+        if (fan >= 0 && fan <= 3)
         {
+            chigoIR.setFanSpeed(fan);
             server.send(200, "text/html; charset=UTF-8", "Fan speed set");
         }
         else
