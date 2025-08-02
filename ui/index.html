@@ -1,0 +1,113 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+  <meta charset="UTF-8">
+  <title>Climate Control</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <script src="scripts/main.js" defer></script>
+  <link rel="stylesheet" href="styles/main.css">
+</head>
+
+<body>
+  <!-- Thunder flash effect (must be behind container) -->
+  <div id="thunder-flash"></div>
+  <!-- Animated clouds background -->
+  <div class="clouds" id="clouds-container"></div>
+  <!-- Animated sun/moon background -->
+  <div id="weather-bg">
+    <div id="sun-bg">
+      <!-- Sun SVG -->
+      <svg width="120" height="120" viewBox="0 0 120 120" fill="none" xmlns="http://www.w3.org/2000/svg">
+        <circle cx="60" cy="60" r="38" fill="#FFD600" />
+        <g stroke="#FFD600" stroke-width="6">
+          <line x1="60" y1="10" x2="60" y2="32" />
+          <line x1="60" y1="88" x2="60" y2="110" />
+          <line x1="10" y1="60" x2="32" y2="60" />
+          <line x1="88" y1="60" x2="110" y2="60" />
+          <line x1="28" y1="28" x2="42" y2="42" />
+          <line x1="92" y1="92" x2="78" y2="78" />
+          <line x1="28" y1="92" x2="42" y2="78" />
+          <line x1="92" y1="28" x2="78" y2="42" />
+        </g>
+      </svg>
+    </div>
+    <div id="moon-bg" style="display:none;">
+      <!-- Moon SVG -->
+      <svg width="120" height="120" viewBox="0 0 120 120" fill="none" xmlns="http://www.w3.org/2000/svg">
+        <path d="M90 60c0 16.57-13.43 30-30 30a30 30 0 010-60c1.7 0 3.37.15 5 .45A35 35 0 0090 60z" fill="#90caf9" />
+      </svg>
+    </div>
+  </div>
+  <!-- Language selector fixed to bottom right with flags, outside container -->
+  <div id="lang-switcher">
+    <button id="lang-en" onclick="setLang('en')" title="English" aria-label="English" type="button">
+      <span style="font-size:22px;">🇬🇧</span>
+    </button>
+    <button id="lang-hu" onclick="setLang('hu')" title="Magyar" aria-label="Magyar" type="button">
+      <span style="font-size:22px;">🇭🇺</span>
+    </button>
+  </div>
+  <div class="container">
+    
+    <h2 id="title"></h2>
+    <div class="controls">
+      <form onsubmit="return false;">
+        <div class="slider-container" style="position:relative;">
+          <label for="temp" class="slider-label" id="label-temp"></label>
+          <div id="temp-value" class="temp-value">24 °C</div>
+          <input type="range" id="temp" name="temp" min="18" max="30" value="24"
+            oninput="updateTempValue(this.value); autoSetTemperature(this.value);"
+            style="position:relative; z-index:2;">
+        </div>
+        <div class="slider-container mode-group">
+          <label class="slider-label" id="label-mode"></label>
+          <div class="button-group" id="mode-group">
+            <button type="button" class="mode-btn ripple" data-value="1" onclick="selectMode(this)">🔥</button>
+            <button type="button" class="mode-btn ripple" data-value="2" onclick="selectMode(this)">💧</button>
+            <button type="button" class="mode-btn ripple" data-value="3" onclick="selectMode(this)">🌬️</button>
+            <button type="button" class="mode-btn ripple" data-value="4" onclick="selectMode(this)">❄️</button>
+          </div>
+        </div>
+        <div class="slider-container airflow-group">
+          <label class="slider-label" id="label-airflow"></label>
+          <div class="button-group" id="airflow-group">
+            <button type="button" class="airflow-btn ripple" data-value="0" onclick="selectAirflow(this)">🚫</button>
+            <button type="button" class="airflow-btn ripple" data-value="1" onclick="selectAirflow(this)">1f</button>
+            <button type="button" class="airflow-btn ripple" data-value="2" onclick="selectAirflow(this)">↕️</button>
+          </div>
+        </div>
+        <div class="slider-container fan-group">
+          <label class="slider-label" id="label-fan"></label>
+          <div class="button-group" id="fan-group">
+            <button type="button" class="fan-btn ripple" data-value="0" onclick="selectFan(this)">⚙️</button>
+            <button type="button" class="fan-btn ripple" data-value="1" onclick="selectFan(this)">Low</button>
+            <button type="button" class="fan-btn ripple" data-value="2" onclick="selectFan(this)">Medium</button>
+            <button type="button" class="fan-btn ripple" data-value="3" onclick="selectFan(this)">High</button>
+          </div>
+        </div>
+      </form>
+      <div class="power-buttons">
+        <button class="power-on ripple" id="btn-on" onclick="sendCommand('/on', getText('on'))"></button>
+        <button class="power-off ripple" id="btn-off" onclick="sendCommand('/off', getText('off'))"></button>
+      </div>
+    </div>
+    <div id="status"><span id="status-icon"></span></div>
+  </div>
+  <div id="darkmode-switcher" title="Sötét mód" aria-label="Sötét mód">
+    <label class="switch">
+      <input type="checkbox" id="darkmode-toggle" style="display:none;">
+      <span class="slider">
+        <span class="icon sun"></span>
+        <span class="icon moon"></span>
+      </span>
+    </label>
+  </div>
+  <!-- Weather effects container -->
+  <div id="weather-effects"></div>
+  <!-- Weather info box -->
+  <div id="weather-info"></div>
+  
+</body>
+
+</html>
