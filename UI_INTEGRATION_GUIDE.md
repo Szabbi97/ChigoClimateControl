@@ -1,143 +1,143 @@
-# UI Integráció - Megoldási Lehetőségek
+# UI Integration - Solution Options
 
-## Összefoglaló
+## Overview
 
-A fejlett UI weblapot két különböző módszerrel integrálhatod az Arduino ESP8266 projektbe:
+You can integrate the advanced UI web interface into the Arduino ESP8266 project using two different methods:
 
-## 1. SPIFFS Megoldás (Ajánlott)
+## 1. SPIFFS Solution (Recommended)
 
-### Előnyök:
-- ✅ **Dinamikus**: Fájlok módosíthatók újrakompilálás nélkül
-- ✅ **Memóriahatékony**: Csak a szükséges fájlok töltődnek be a memóriába
-- ✅ **Könnyű fejlesztés**: Változtatások után csak SPIFFS feltöltés szükséges
-- ✅ **Nagyobb projektek**: Alkalmas sok fájllal rendelkező projektekhez
+### Advantages:
+- ✅ **Dynamic**: Files can be modified without recompilation
+- ✅ **Memory efficient**: Only necessary files are loaded into memory
+- ✅ **Easy development**: Only SPIFFS upload needed after changes
+- ✅ **Large projects**: Suitable for projects with many files
 
-### Hátrányok:
-- ❌ **ESP8266FS plugin szükséges**: Extra telepítés az Arduino IDE-ben
-- ❌ **Két lépéses feltöltés**: Külön kell feltölteni a kódot és a fájlokat
+### Disadvantages:
+- ❌ **ESP8266FS plugin required**: Extra installation in Arduino IDE
+- ❌ **Two-step upload**: Code and files must be uploaded separately
 
-### Használat:
+### Usage:
 ```cpp
-// WebServerControl.h és WebServerControl.cpp fájlokat használd
-// SPIFFS támogatással
+// Use WebServerControl.h and WebServerControl.cpp files
+// with SPIFFS support
 ```
 
-1. **Fájlok helye**: `climatecontrol/data/` mappában
-2. **Feltöltés**: Arduino IDE > Tools > ESP8266 Sketch Data Upload
-3. **Memóriahasználat**: ~15-20KB SPIFFS terület
+1. **File location**: In `climatecontrol/data/` folder
+2. **Upload**: Arduino IDE > Tools > ESP8266 Sketch Data Upload
+3. **Memory usage**: ~15-20KB SPIFFS space
 
-## 2. Beépített Megoldás (Egyszerűbb)
+## 2. Embedded Solution (Simpler)
 
-### Előnyök:
-- ✅ **Egy lépéses feltöltés**: Minden egyben van a sketch-ben
-- ✅ **Nincs extra plugin**: Csak az Arduino IDE szükséges
-- ✅ **Megbízható**: Nem függenek fájlrendszerből
+### Advantages:
+- ✅ **One-step upload**: Everything is in the sketch
+- ✅ **No extra plugin**: Only Arduino IDE needed
+- ✅ **Reliable**: Not dependent on filesystem
 
-### Hátrányok:
-- ❌ **Statikus**: Módosításokhoz újrakompilálás szükséges
-- ❌ **Memóriahasználat**: Minden fájl a PROGMEM-ben van
-- ❌ **Nagyobb sketch méret**: ~50-80KB extra
+### Disadvantages:
+- ❌ **Static**: Recompilation needed for modifications
+- ❌ **Memory usage**: All files in PROGMEM
+- ❌ **Larger sketch size**: ~50-80KB extra
 
-### Használat:
+### Usage:
 ```cpp
-// WebServerControl_Embedded.h és WebServerControl_Embedded.cpp fájlokat használd
-// WebResources.h header fájllal
+// Use WebServerControl_Embedded.h and WebServerControl_Embedded.cpp files
+// with WebResources.h header file
 ```
 
-1. **Fájl generálás**: `tools/generate_web_resources.py` futtatása
-2. **Feltöltés**: Normál sketch feltöltés
-3. **Memóriahasználat**: ~50-80KB program memória
+1. **File generation**: Run `tools/generate_web_resources.py`
+2. **Upload**: Normal sketch upload
+3. **Memory usage**: ~50-80KB program memory
 
-## Telepítési Útmutató
+## Installation Guide
 
-### SPIFFS Megoldás Telepítése:
+### SPIFFS Solution Installation:
 
-1. **ESP8266FS Plugin telepítése**:
-   - Töltsd le: https://github.com/esp8266/arduino-esp8266fs-plugin
-   - Helyezd el: `Arduino/tools/ESP8266FS/tool/esp8266fs.jar`
+1. **ESP8266FS Plugin installation**:
+   - Download: https://github.com/esp8266/arduino-esp8266fs-plugin
+   - Place at: `Arduino/tools/ESP8266FS/tool/esp8266fs.jar`
 
-2. **Fájlok előkészítése**:
+2. **File preparation**:
    ```bash
-   # A data mappa már elkészült
+   # Data folder is already prepared
    ls climatecontrol/data/
    ```
 
-3. **Kód módosítása**:
-   - Használd a meglévő `WebServerControl.h` és `WebServerControl.cpp` fájlokat
-   - SPIFFS támogatás már benne van
+3. **Code modification**:
+   - Use existing `WebServerControl.h` and `WebServerControl.cpp` files
+   - SPIFFS support is already included
 
-4. **Feltöltés**:
-   - Első: Sketch feltöltése (Ctrl+U)
-   - Második: Tools > ESP8266 Sketch Data Upload
+4. **Upload**:
+   - First: Sketch upload (Ctrl+U)
+   - Second: Tools > ESP8266 Sketch Data Upload
 
-### Beépített Megoldás Telepítése:
+### Embedded Solution Installation:
 
-1. **Fájlok generálása**:
+1. **File generation**:
    ```bash
    cd tools
    python generate_web_resources.py
    ```
 
-2. **Kód cseréje**:
+2. **Code replacement**:
    ```bash
-   # Mentsd el az eredeti fájlokat
+   # Save original files
    mv climatecontrol/WebServerControl.h climatecontrol/WebServerControl_SPIFFS.h
    mv climatecontrol/WebServerControl.cpp climatecontrol/WebServerControl_SPIFFS.cpp
    
-   # Használd az embedded verziókat
+   # Use embedded versions
    mv climatecontrol/WebServerControl_Embedded.h climatecontrol/WebServerControl.h
    mv climatecontrol/WebServerControl_Embedded.cpp climatecontrol/WebServerControl.cpp
    ```
 
-3. **Feltöltés**:
-   - Csak sketch feltöltése szükséges (Ctrl+U)
+3. **Upload**:
+   - Only sketch upload needed (Ctrl+U)
 
-## Memóriahasználat Összehasonlítás
+## Memory Usage Comparison
 
-| Megoldás | Program Flash | SPIFFS | RAM használat |
-|----------|---------------|--------|---------------|
-| SPIFFS   | ~15KB         | ~80KB  | ~5KB          |
-| Beépített| ~95KB         | 0KB    | ~15KB         |
+| Solution | Program Flash | SPIFFS | RAM usage |
+|----------|---------------|--------|-----------|
+| SPIFFS   | ~15KB         | ~80KB  | ~5KB      |
+| Embedded | ~95KB         | 0KB    | ~15KB     |
 
-## Ajánlás
+## Recommendation
 
-**Kezdőknek**: Beépített megoldás (egyszerűbb telepítés)
-**Fejlesztőknek**: SPIFFS megoldás (rugalmasabb)
+**For beginners**: Embedded solution (simpler installation)
+**For developers**: SPIFFS solution (more flexible)
 
-## Funkciók (mindkét megoldásnál azonos)
+## Features (identical for both solutions)
 
-- 🌍 **Többnyelvű**: Magyar és angol
-- 🌙 **Sötét/világos téma**
-- 📱 **Reszponzív design**
-- 🌦️ **Időjárás animációk**
-- 🎮 **Klímavezérlés**:
-  - Be/kikapcsolás
-  - Hőmérséklet (18-30°C)
-  - Üzemmód (fűtés/hűtés/ventilátor/párátlanítás)
-  - Légáramlás beállítása
-  - Ventilátor sebesség
+- 🌍 **Multi-language**: Hungarian and English
+- 🌙 **Dark/light theme**
+- 📱 **Responsive design**
+- 🌦️ **Weather animations**
+- 🎮 **Climate control**:
+  - Power ON/OFF
+  - Temperature (18-30°C)
+  - Mode (heat/cool/fan/dehumidify)
+  - Airflow setting
+  - Fan speed
 
-## Következő Lépések
+## Next Steps
 
-1. **Válassz megoldást** (SPIFFS vagy Beépített)
-2. **Kövesd a telepítési útmutatót** (`SPIFFS_SETUP.md`)
-3. **Állítsd be a WiFi adatokat** a sketch-ben
-4. **Állítsd be az API kulcsot** (`WEATHER_API_SETUP.md`) - opcionális
-5. **Töltsd fel** a megfelelő módon
-6. **Teszteld** a weblapot böngészőben
+1. **Choose solution** (SPIFFS or Embedded)
+2. **Follow installation guide** (`SPIFFS_SETUP.md`)
+3. **Set WiFi credentials** in sketch
+4. **Set API key** (`WEATHER_API_SETUP.md`) - optional
+5. **Upload** using appropriate method
+6. **Test** web interface in browser
 
-## Jelenleg Aktív Verzió: Beépített (Embedded)
+## Currently Active Version: Embedded
 
-A projekt jelenleg a beépített verziót használja:
-- ✅ Egy lépéses feltöltés
-- ✅ Nincs szükség ESP8266FS pluginra  
-- ✅ Minden fájl a sketch-ben van
+The project currently uses the embedded version:
+- ✅ One-step upload
+- ✅ No need for ESP8266FS plugin
+- ✅ All files in sketch
 
-## Váltás SPIFFS verzióra:
+## Switch to SPIFFS version:
 
-Ha mégis a SPIFFS verziót szeretnéd használni:
+If you want to use SPIFFS version instead:
 ```bash
-# Vissza az SPIFFS verzióra
+# Switch back to SPIFFS version
 mv WebServerControl.cpp WebServerControl_Embedded.cpp.bak
 mv WebServerControl.h WebServerControl_Embedded.h.bak
 mv WebServerControl_SPIFFS.cpp.bak WebServerControl.cpp

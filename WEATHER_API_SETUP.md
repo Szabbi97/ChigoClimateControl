@@ -1,42 +1,42 @@
-# Időjárás API Beállítás
+# Weather API Setup
 
-## OpenWeatherMap API Kulcs
+## OpenWeatherMap API Key
 
-A weblap időjárás funkcióihoz OpenWeatherMap API kulcs szükséges.
+The web interface weather features require an OpenWeatherMap API key.
 
-### API Kulcs Beszerzése:
+### Getting API Key:
 
-1. **Regisztráció**: Menj a https://openweathermap.org/api oldalra
-2. **Ingyenes fiók**: Hozz létre egy ingyenes fiókot
-3. **API kulcs**: A "API keys" menüpontban találod a kulcsodat
+1. **Registration**: Go to https://openweathermap.org/api
+2. **Free account**: Create a free account
+3. **API key**: Find your key in the "API keys" section
 
-### API Kulcs Beállítása:
+### API Key Configuration:
 
-#### Ha beépített verziót használod:
-1. Nyisd meg: `ui/scripts/weather.js`
-2. Keress rá: `const apiKey = 'YOUR_API_KEY';`
-3. Helyettesítsd `YOUR_API_KEY`-t a saját kulcsoddal
-4. Futtasd: `tools/generate_web_resources.py`
-5. Töltsd fel a sketch-et
+#### If using embedded version:
+1. Open: `ui/scripts/weather.js`
+2. Find: `const apiKey = 'YOUR_API_KEY';`
+3. Replace `YOUR_API_KEY` with your actual key
+4. Run: `tools/generate_web_resources.py`
+5. Upload the sketch
 
-#### Ha SPIFFS verziót használod:
-1. Nyisd meg: `ui/scripts/weather.js` és `climatecontrol/data/scripts/weather.js`
-2. Mindkét fájlban: `const apiKey = 'YOUR_API_KEY';`
-3. Helyettesítsd `YOUR_API_KEY`-t a saját kulcsoddal
-4. Töltsd fel a SPIFFS adatokat: Tools > ESP8266 Sketch Data Upload
+#### If using SPIFFS version:
+1. Open: `ui/scripts/weather.js` and `climatecontrol/data/scripts/weather.js`
+2. In both files: `const apiKey = 'YOUR_API_KEY';`
+3. Replace `YOUR_API_KEY` with your actual key
+4. Upload SPIFFS data: Tools > ESP8266 Sketch Data Upload
 
-### Példa:
+### Example:
 ```javascript
 const apiKey = 'abc123def456ghi789jkl012mno345pq';
 ```
 
-### Biztonsági Figyelmeztetés:
-- ⚠️ **Ne commitáld a valódi API kulcsot Git repository-ba!**
-- 🔒 **Használj environment változókat vagy külön config fájlt**
-- 📝 **Az API kulcs free verzió: 1000 hívás/hó**
+### Security Warning:
+- ⚠️ **Don't commit real API key to Git repository!**
+- 🔒 **Use environment variables or separate config file**
+- 📝 **Free API key limit: 1000 calls/month**
 
-### Opcionális: API kulcs nélküli működés
-Ha nem szeretnéd használni az időjárás funkciót:
-- Az API kulcs `YOUR_API_KEY` marad
-- A weblap minden más funkció működni fog
-- Csak az időjárás effektek nem jelennek meg
+### Optional: Operation without API key
+If you don't want to use weather features:
+- Leave API key as `YOUR_API_KEY`
+- All other web interface functions will work
+- Only weather effects won't be displayed

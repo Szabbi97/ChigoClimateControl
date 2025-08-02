@@ -1,93 +1,93 @@
-# SPIFFS Weblap Integráció
+# SPIFFS Web Interface Integration
 
-Ez a dokumentum leírja, hogyan integráljuk a fejlett UI weblapot az Arduino ESP8266 projektbe SPIFFS használatával.
+This document describes how to integrate the advanced UI web interface into the Arduino ESP8266 project using SPIFFS.
 
-## Előfeltételek
+## Prerequisites
 
-1. **Arduino IDE** telepítve
-2. **ESP8266 board package** telepítve az Arduino IDE-ben
-3. **ESP8266FS plugin** telepítve (SPIFFS adatok feltöltéséhez)
+1. **Arduino IDE** installed
+2. **ESP8266 board package** installed in Arduino IDE
+3. **ESP8266FS plugin** installed (for SPIFFS data upload)
 
-## ESP8266FS Plugin Telepítése
+## ESP8266FS Plugin Installation
 
-1. Töltsd le az ESP8266FS plugint: https://github.com/esp8266/arduino-esp8266fs-plugin
-2. Csomagold ki és helyezd el az Arduino IDE tools mappájában:
+1. Download ESP8266FS plugin: https://github.com/esp8266/arduino-esp8266fs-plugin
+2. Extract and place in Arduino IDE tools folder:
    - Windows: `C:\Users\{username}\Documents\Arduino\tools\ESP8266FS\tool\esp8266fs.jar`
-3. Indítsd újra az Arduino IDE-t
+3. Restart Arduino IDE
 
-## Használat
+## Usage
 
-### 1. Kód feltöltése
+### 1. Code Upload
 
-1. Nyisd meg a `climatecontrol/climatecontrol.ino` fájlt az Arduino IDE-ben
-2. Állítsd be a WiFi hálózat nevét és jelszavát:
+1. Open `climatecontrol/climatecontrol.ino` file in Arduino IDE
+2. Set your WiFi network name and password:
    ```cpp
-   const char *ssid = "YOUR_SSID";     // Helyettesítsd a saját WiFi neveddel
-   const char *password = "YOUR_PASSWORD"; // Helyettesítsd a saját WiFi jelszavaddal
+   const char *ssid = "YOUR_SSID";     // Replace with your WiFi name
+   const char *password = "YOUR_PASSWORD"; // Replace with your WiFi password
    ```
-3. Válaszd ki a megfelelő ESP8266 board típust és portot
-4. Töltsd fel a kódot az ESP8266-ra
+3. Select appropriate ESP8266 board type and port
+4. Upload code to ESP8266
 
-### 2. SPIFFS Adatok Feltöltése
+### 2. SPIFFS Data Upload
 
-1. Az Arduino IDE-ben menj a **Tools > ESP8266 Sketch Data Upload** menüpontra
-2. Várd meg, amíg a feltöltés befejeződik
-3. Ez feltölti a `data/` mappában található összes fájlt az ESP8266 SPIFFS fájlrendszerére
+1. In Arduino IDE go to **Tools > ESP8266 Sketch Data Upload**
+2. Wait for upload to complete
+3. This uploads all files in the `data/` folder to ESP8266 SPIFFS filesystem
 
-### 3. Eszköz Tesztelése
+### 3. Device Testing
 
-1. Nyisd meg a Serial Monitor-t (9600 baud)
-2. Az ESP8266 újraindítása után látni fogod a kapcsolódási információkat
-3. Jegyezd fel az ESP8266 IP címét
-4. Nyisd meg a böngészőben: `http://[ESP8266_IP_CIME]`
+1. Open Serial Monitor (9600 baud)
+2. After ESP8266 restart you'll see connection information
+3. Note down ESP8266 IP address
+4. Open in browser: `http://[ESP8266_IP]`
 
-## Funkciók
+## Features
 
-A weblap a következő funkciókat biztosítja:
+The web interface provides the following features:
 
-- **Modern UI**: Reszponzív design, sötét/világos téma
-- **Többnyelvű támogatás**: Magyar és angol
-- **Időjárás animációk**: Vizuális effektek
-- **Klímavezérlés**:
-  - Be/kikapcsolás
-  - Hőmérséklet beállítása (18-30°C)
-  - Üzemmód váltás (fűtés, párátlanítás, ventilátor, hűtés)
-  - Légáramlás beállítása
-  - Ventilátor sebesség beállítása
+- **Modern UI**: Responsive design, dark/light theme
+- **Multi-language support**: Hungarian and English
+- **Weather animations**: Visual effects
+- **Climate control**:
+  - Power ON/OFF
+  - Temperature setting (18-30°C)
+  - Mode switching (heat, dehumidify, fan, cool)
+  - Airflow setting
+  - Fan speed setting
 
-## API Végpontok
+## API Endpoints
 
-A weblap a következő API végpontokat használja:
+The web interface uses the following API endpoints:
 
-- `GET /status` - Eszköz állapot lekérdezése
-- `GET /on` - Klíma bekapcsolása
-- `GET /off` - Klíma kikapcsolása
-- `GET /set?temp=XX` - Hőmérséklet beállítása
-- `GET /setmode?mode=X` - Üzemmód beállítása (1=fűtés, 2=párátlanítás, 3=ventilátor, 4=hűtés)
-- `GET /setairflow?airflow=X` - Légáramlás beállítása (0=kikapcsolva, 1=fix, 2=mozgó)
-- `GET /setfan?fan=X` - Ventilátor sebesség (0=auto, 1=alacsony, 2=közepes, 3=magas)
+- `GET /status` - Device status query
+- `GET /on` - Turn air conditioner on
+- `GET /off` - Turn air conditioner off
+- `GET /set?temp=XX` - Temperature setting
+- `GET /setmode?mode=X` - Mode setting (1=heat, 2=dehumidify, 3=fan, 4=cool)
+- `GET /setairflow?airflow=X` - Airflow setting (0=off, 1=fixed, 2=swing)
+- `GET /setfan?fan=X` - Fan speed (0=auto, 1=low, 2=medium, 3=high)
 
-## Hibaelhárítás
+## Troubleshooting
 
 ### SPIFFS Mount Failed
-Ha a "SPIFFS mount failed" hibaüzenetet látod:
-1. Ellenőrizd, hogy az ESP8266FS plugin megfelelően telepítve van
-2. Próbáld meg újra feltölteni a SPIFFS adatokat
-3. Ellenőrizd, hogy van-e elegendő memória az ESP8266-on
+If you see "SPIFFS mount failed" error:
+1. Check that ESP8266FS plugin is properly installed
+2. Try uploading SPIFFS data again
+3. Check if there's enough memory on ESP8266
 
-### Fájlok nem töltődnek be
-1. Ellenőrizd a Serial Monitor üzeneteket
-2. Győződj meg róla, hogy a fájlok a `data/` mappában vannak
-3. Próbáld meg újra feltölteni a SPIFFS adatokat
+### Files not loading
+1. Check Serial Monitor messages
+2. Make sure files are in the `data/` folder
+3. Try uploading SPIFFS data again
 
-### WiFi kapcsolódási problémák
-1. Ellenőrizd a WiFi hálózat nevét és jelszavát
-2. Győződj meg róla, hogy az ESP8266 a WiFi hatótávolságában van
-3. Próbáld meg újraindítani az ESP8266-ot
+### WiFi connection problems
+1. Check WiFi network name and password
+2. Make sure ESP8266 is within WiFi range
+3. Try restarting ESP8266
 
-## Fejlesztés
+## Development
 
-Ha módosítod a weblap fájljait:
-1. Mentsd el a változtatásokat a `ui/` mappában
-2. Másold át a fájlokat a `data/` mappába
-3. Töltsd fel újra a SPIFFS adatokat az "ESP8266 Sketch Data Upload" funkcióval
+If you modify web interface files:
+1. Save changes in the `ui/` folder
+2. Copy files to the `data/` folder
+3. Re-upload SPIFFS data using "ESP8266 Sketch Data Upload" function
