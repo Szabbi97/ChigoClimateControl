@@ -1,6 +1,6 @@
-
 #include <ESP8266WiFi.h>
 #include <ESP8266WebServer.h>
+#include <ESP8266mDNS.h>  // Új include
 #include "WiFiControl.h"
 #include "ChigoIRControl.h"
 #include "WebServerControl.h"
@@ -50,6 +50,14 @@ void setup()
   } else {
     Serial.println("Mentett WiFi konfiguráció található, csatlakozás...");
     wifi.connect();
+    
+    // mDNS indítása WiFi csatlakozás után
+    if (MDNS.begin("chigocontrol")) {
+      Serial.println("mDNS responder started");
+      Serial.println("Eszköz elérhető: http://chigocontrol.local");
+      MDNS.addService("http", "tcp", 80);
+    }
+    
     web.begin();
     Serial.println("Web server started");
   }
@@ -58,6 +66,7 @@ void setup()
 void loop()
 {
   server.handleClient();
+  MDNS.update();  // mDNS frissítése
   
   // Reset gomb figyelése
   handleResetButton();
