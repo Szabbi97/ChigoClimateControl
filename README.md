@@ -32,6 +32,7 @@ Modern WiFi-based web interface for controlling Chigo air conditioners using ESP
 
 - **ESP8266** based board (NodeMCU, Wemos D1 mini)
 - **IR LED** connected to appropriate GPIO (default: D2)
+- **Reset button** (optional) connected to D1 (GPIO5) with pull-up resistor
 - **Chigo air conditioner** (IR controlled)
 
 ## 💻 Software Requirements
@@ -82,7 +83,11 @@ const char *password = "YOUR_WIFI_PASSWORD"; // WiFi password
 ```
 
 ### 3. Hardware Assembly
+- **Detailed guide**: [`HARDWARE_ASSEMBLY.md`](HARDWARE_ASSEMBLY.md)
 - Connect IR LED to D2 (GPIO4) pin
+- **Optional**: Connect reset button between D1 (GPIO5) and GND
+  - Use internal pull-up resistor (configured in code)
+  - Hold for 3 seconds to reset WiFi settings
 - Position ESP8266 facing the air conditioner
 
 ### 4. Upload (Embedded Version) - Recommended
@@ -138,7 +143,24 @@ hideWeatherInfo();
 ### Hardware Pin Assignment
 ```cpp
 ChigoIRControl chigoIR(4); // D2 pin (GPIO4)
+#define RESET_BUTTON_PIN 5  // D1 pin (GPIO5) - optional reset button
 ```
+
+### WiFi Reset Options
+1. **Hardware Reset Button** (recommended):
+   - Connect button between D1 (GPIO5) and GND
+   - Hold for 3 seconds to clear WiFi settings
+   - Device will restart in configuration mode
+
+2. **Serial Command**:
+   - Open Serial Monitor (9600 baud)
+   - Send: `CLEAR_WIFI`
+   - Device will restart in configuration mode
+
+3. **Configuration Portal**:
+   - Automatically starts if no WiFi credentials stored
+   - Creates "ChigoSetup" WiFi network
+   - Browse to: `192.168.4.1`
 
 ### Weather API (Optional)
 1. Register at: https://openweathermap.org/api
